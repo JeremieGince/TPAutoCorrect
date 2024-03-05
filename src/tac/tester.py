@@ -1,16 +1,22 @@
+import enum
 import json
 import logging
 import os
 import shutil
 import warnings
 from copy import deepcopy
-from typing import Optional
+from typing import Optional, Union, List, Tuple
 
 from . import utils
-from .perf_test_case import PEP8TestCase
+from .perf_test_case import PEP8TestCase, TestCase, TestResult
 from .report import Report
 from .source import SourceCode, SourceTests
 from .utils import find_filepath, rm_pycache, rm_pyc_files, rm_pytest_cache
+
+
+class TesterInput(enum.Enum):
+    AUTO = 0
+    NULL = 1
 
 
 class Tester:
@@ -33,17 +39,18 @@ class Tester:
     
     def __init__(
             self,
-            code_src: Optional[SourceCode] = None,
-            tests_src: Optional[SourceTests] = None,
+            code_src: Optional[Union[SourceCode, TesterInput]] = None,
+            tests_src: Optional[Union[SourceTests, TesterInput]] = None,
             *,
             master_code_src: Optional[SourceCode] = None,
             master_tests_src: Optional[SourceTests] = None,
             report_kwargs: Optional[dict] = None,
+            additional_tests: Optional[Union[TestCase, List[TestCase]]] = None,
             **kwargs
     ):
-        if code_src is None:
+        if code_src is None or code_src == TesterInput.AUTO:
             code_src = SourceCode()
-        if tests_src is None:
+        if tests_src is None or tests_src == TesterInput.AUTO:
             tests_src = SourceTests()
         self.code_src = code_src
         self.tests_src = tests_src
@@ -62,6 +69,11 @@ class Tester:
         )
         report_kwargs = report_kwargs or {}
         self.report = Report(report_filepath=self.report_filepath, **report_kwargs)
+
+        self.additional_tests = additional_tests or []
+        if isinstance(self.additional_tests, TestCase):
+            self.additional_tests = [self.additional_tests]
+
         self.weights = self.kwargs.get("weights", self.DEFAULT_WEIGHTS)
     
     @property
@@ -126,7 +138,7 @@ class Tester:
     
     @property
     def is_setup(self):
-        return all([s.is_setup for s in self.all_sources])
+        return all([s.is_setup for s in self.all_sources if s != TesterInput.NULL])
     
     def _find_temp_filepath(self, filename: str):
         roots = [self.report_dir, os.getcwd()]
@@ -139,8 +151,10 @@ class Tester:
         debug = kwargs.get("debug", False)
         if self.is_setup and (not force):
             return self
-        self.code_src.setup_at(self.report_dir, **kwargs)
-        self.tests_src.setup_at(self.report_dir, **kwargs)
+        if self.code_src != TesterInput.NULL:
+            self.code_src.setup_at(self.report_dir, **kwargs)
+        if self.tests_src != TesterInput.NULL:
+            self.tests_src.setup_at(self.report_dir, **kwargs)
         if self.master_code_src is not None:
             self.master_code_src.setup_at(self.report_dir, **kwargs)
         if self.master_tests_src is not None:
@@ -168,18 +182,19 @@ class Tester:
     
     def _run(self, **kwargs):
         self.clear_pycache()
-        self._run_pytest(**kwargs)
-        self.report.add(
-            self.CODE_COVERAGE_KEY,
-            self.get_code_coverage(),
-            weight=self.weights[self.CODE_COVERAGE_KEY],
-        )
-        self.test_cases_summary = deepcopy(self.get_test_cases_summary(self.dot_report_json_path))
-        self.report.add(
-            self.PERCENT_PASSED_KEY,
-            self.test_cases_summary[self.PERCENT_PASSED_KEY],
-            weight=self.weights[self.PERCENT_PASSED_KEY],
-        )
+        if self.tests_src != TesterInput.NULL:
+            self._run_pytest(**kwargs)
+            self.report.add(
+                self.CODE_COVERAGE_KEY,
+                self.get_code_coverage(),
+                weight=self.weights[self.CODE_COVERAGE_KEY],
+            )
+            self.test_cases_summary = deepcopy(self.get_test_cases_summary(self.dot_report_json_path))
+            self.report.add(
+                self.PERCENT_PASSED_KEY,
+                self.test_cases_summary[self.PERCENT_PASSED_KEY],
+                weight=self.weights[self.PERCENT_PASSED_KEY],
+            )
         self.report.add(
             self.PEP8_KEY,
             self.get_pep8_score(),
@@ -195,7 +210,11 @@ class Tester:
                 self.master_test_cases_summary[self.PERCENT_PASSED_KEY],
                 weight=self.weights[self.MASTER_PERCENT_PASSED_KEY],
             )
-        
+
+        add_results = self.run_additional_tests()
+        for test, result in add_results:
+            self.report.add(result.name, result.percent_value, weight=self.weights.get(result.name, test.weight))
+
         self.clear_pycache()
     
     def _run_pytest(self, **kwargs):
@@ -266,11 +285,31 @@ class Tester:
         }
     
     def get_pep8_score(self):
-        src_test_case = PEP8TestCase(self.PEP8_KEY, self.code_src.local_path)
-        src_test_case_result = src_test_case.run()
-        tests_test_case = PEP8TestCase(self.PEP8_KEY, self.tests_src.local_path)
-        tests_test_case_result = tests_test_case.run()
-        return (src_test_case_result.percent_value + tests_test_case_result.percent_value) / 2.0
+        src_test_case_result_percent_value = 0.0
+        tests_test_case_result_percent_value = 0.0
+        count = 2
+        if self.code_src == TesterInput.NULL:
+            count -= 1
+        else:
+            src_test_case = PEP8TestCase(self.PEP8_KEY, self.code_src.local_path)
+            src_test_case_result = src_test_case.run()
+            src_test_case_result_percent_value = src_test_case_result.percent_value
+        if self.tests_src == TesterInput.NULL:
+            count -= 1
+        else:
+            tests_test_case = PEP8TestCase(self.PEP8_KEY, self.tests_src.local_path)
+            tests_test_case_result = tests_test_case.run()
+            tests_test_case_result_percent_value = tests_test_case_result.percent_value
+        if count == 0:
+            return 0.0
+        return (src_test_case_result_percent_value + tests_test_case_result_percent_value) / count
+
+    def run_additional_tests(self) -> List[Tuple[TestCase, TestResult]]:
+        tests_results = []
+        for test in self.additional_tests:
+            test_result = test.run()
+            tests_results.append((test, test_result))
+        return tests_results
     
     def move_temp_files_to_report_dir(self, **kwargs):
         for f in self.temp_files:
@@ -321,4 +360,8 @@ class Tester:
         except ImportError:
             pass
         rmtree_func(self.report_dir)
+        return self
+
+    def add_test(self, test: TestCase):
+        self.additional_tests.append(test)
         return self

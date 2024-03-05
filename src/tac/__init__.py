@@ -12,7 +12,7 @@ from .source import (
     SourceMasterCode,
     SourceMasterTests,
 )
-from .tester import Tester
+from .tester import Tester, TesterInput
 from .report import Report
 from . import utils as tac_utils
 

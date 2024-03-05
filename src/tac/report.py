@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Callable, Optional
 
 import numpy as np
@@ -161,6 +162,7 @@ class Report:
         if report_filepath is not None:
             self.report_filepath = report_filepath
         assert self.report_filepath is not None, "report_filepath must be initialized before saving"
+        os.makedirs(os.path.dirname(self.report_filepath), exist_ok=True)
         with open(self.report_filepath, "w") as f:
             json.dump(self.get_state(), f, indent=4)
         return self.report_filepath

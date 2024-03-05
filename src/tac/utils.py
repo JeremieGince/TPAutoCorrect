@@ -272,3 +272,4 @@ def get_git_repo_url(working_dir: str, search_parent_directories: bool = True) -
         return repo.remotes.origin.url
     except Exception:
         return None
+
