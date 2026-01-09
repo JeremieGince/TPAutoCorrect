@@ -1,15 +1,25 @@
 [project]
-name = "tpautocorrect"
+name = "TAC"
 version = "0.1.0"
-description = "Add your description here"
+description = ""
+authors = [{ name = "Jérémie Gince", email = "gincejeremie@gmail.com" }]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Operating System :: OS Independent",
+]
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.10, <=3.14"
 dependencies = [
-    "gitpython>=3.1.46",
-    "numpy>=2.4.0",
-    "pycodestyle>=2.14.0",
-    "pytest>=9.0.2",
-    "pytest-cov>=7.0.0",
-    "pytest-json-report>=1.5.0",
-    "pythonbasictools>=0.0.3",
+  "gitpython>=3.1.46",
+  "numpy>=2.4.0",
+  "pycodestyle>=2.14.0",
+  "pytest>=9.0.2",
+  "pytest-cov>=7.0.0",
+  "pytest-json-report>=1.5.0",
+  "pythonbasictools>=0.0.3",
 ]
