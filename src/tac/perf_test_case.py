@@ -18,7 +18,7 @@ class TestResult:
 
 class TestCase:
     def run(self) -> TestResult:
-        pass
+        raise NotImplementedError
 
 
 class PEP8TestCase(TestCase):

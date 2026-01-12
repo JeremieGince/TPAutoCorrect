@@ -160,9 +160,9 @@ def add_to_path(p):
 class PathImport:
     def __init__(self, filepath: str):
         self.filepath = os.path.abspath(os.path.normpath(filepath))
-        self._module = None
-        self._spec = None
-        self.added_sys_modules = []
+        self._module: Optional[str] = None
+        self._spec: Optional[str] = None
+        self.added_sys_modules: List[str] = []
 
     @property
     def module_name(self):
@@ -220,9 +220,9 @@ class PathImport:
     def path_import(self, absolute_path: Optional[str] = None):
         absolute_path = absolute_path or self.filepath
         spec = importlib_util.spec_from_file_location(self.get_module_name(absolute_path), absolute_path)
-        module = importlib_util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        self._module, self._spec = module, spec
+        module: str = importlib_util.module_from_spec(spec)  # type: ignore
+        spec.loader.exec_module(module)  # type: ignore
+        self._module, self._spec = module, spec  # type: ignore
         return module, spec
 
     def __repr__(self):

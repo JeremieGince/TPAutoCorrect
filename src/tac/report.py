@@ -51,7 +51,7 @@ class Report:
     DEFAULT_GRADE_MAX = 100.0
     DEFAULT_GRADE_MIN_VALUE = 0.0
 
-    def __init__(self, data: dict = None, report_filepath: str = None, *args, **kwargs):
+    def __init__(self, data: Optional[dict] = None, report_filepath: Optional[str] = None, *args, **kwargs):
         self.data = data
         self.report_filepath = report_filepath
         self.grade_min = kwargs.pop("grade_min", self.DEFAULT_GRADE_MIN)
@@ -134,7 +134,7 @@ class Report:
     def normalize_weights_(self) -> "Report":
         total_weight = sum([self.get_weight(k) for k in self.keys()])
         for k in self.keys():
-            self.data[k][self.WEIGHT_KEY] = self.get_weight(k) / total_weight
+            self.data[k][self.WEIGHT_KEY] = self.get_weight(k) / total_weight  # type: ignore
         return self
 
     def get_normalized(self) -> "Report":
@@ -161,7 +161,7 @@ class Report:
             grade = self.grade_norm_func(grade)
         return grade
 
-    def save(self, report_filepath: str = None):
+    def save(self, report_filepath: Optional[str] = None):
         if report_filepath is not None:
             self.report_filepath = report_filepath
         assert self.report_filepath is not None, "report_filepath must be initialized before saving"
@@ -169,7 +169,7 @@ class Report:
             json.dump(self.get_state(), f, indent=4)
         return self.report_filepath
 
-    def load(self, report_filepath: str = None):
+    def load(self, report_filepath: Optional[str] = None):
         if report_filepath is not None:
             self.report_filepath = report_filepath
         assert self.report_filepath is not None, "report_filepath must be initialized before loading"

@@ -4,7 +4,7 @@ import os
 import shutil
 import warnings
 from copy import deepcopy
-from typing import Optional
+from typing import Dict, List, Optional
 
 from . import utils
 from .perf_test_case import PEP8TestCase
@@ -247,14 +247,14 @@ class Tester:
         """
         try:
             coverage_file = utils.reindent_json_file(self.coverage_json_path)
-            coverage_data = json.load(open(coverage_file))
+            coverage_data: Dict[str, Dict[str, Dict[str, float]]] = json.load(open(coverage_file))
         except Exception as err:
             warnings.warn(f"Could not reindent or load {self.coverage_json_path=} -> {err}")
             return 0.0
-        summaries = [
-            d["summary"]
+        summaries: List[Dict[str, float]] = [  # type: ignore
+            d["summary"]  # type: ignore
             for f, d in coverage_data["files"].items()
-            if f.endswith(".py") and utils.is_subpath_in_path(self.code_src.local_path, f)
+            if f.endswith(".py") and utils.is_subpath_in_path(self.code_src.local_path, f)  # type: ignore
         ]
         mean_percent_covered = sum([s["percent_covered"] for s in summaries]) / len(summaries)
         return mean_percent_covered
@@ -320,7 +320,7 @@ class Tester:
         if push_report_to is None or push_report_to == "auto":
             self.logging_func(f"trying to detect git repo url from {self.code_src.working_dir}")
             push_report_to = utils.get_git_repo_url(
-                self.code_src.working_dir,
+                self.code_src.working_dir,  # type: ignore
             )
         if push_report_to is None:
             warnings.warn(
@@ -328,7 +328,7 @@ class Tester:
                 RuntimeWarning,
             )
             return self
-        kwargs.setdefault("local_tmp_path", os.path.join(self.report_dir, "tmp_repo"))
+        kwargs.setdefault("local_tmp_path", os.path.join(self.report_dir, "tmp_repo"))  # type: ignore
         self.report.save(self.report_filepath)
         utils.push_file_to_git_repo(self.report_filepath, push_report_to, **kwargs)
         return self
