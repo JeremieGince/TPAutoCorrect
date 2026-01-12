@@ -13,7 +13,7 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 readme = "README.md"
-requires-python = ">=3.9, <=3.14"
+requires-python = ">=3.9, <3.15"
 dependencies = [
   "gitpython>=3.1.46",
   "numpy (>=1.23,<3.0.0)",
