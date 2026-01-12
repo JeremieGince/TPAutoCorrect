@@ -29,6 +29,8 @@ dev = [
     "black>=25.11.0",
     "isort>=6.1.0",
     "mypy>=1.19.1",
+    "pytest-timeout>=2.4.0",
+    "pytest-xdist>=3.7.0,<4",
 ]
 
 [tool.coverage.report]
