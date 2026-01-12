@@ -9,8 +9,7 @@ import warnings
 
 from . import utils as tac_utils
 from .report import Report
-from .source import (Source, SourceCode, SourceMasterCode, SourceMasterTests,
-                     SourceTests)
+from .source import Source, SourceCode, SourceMasterCode, SourceMasterTests, SourceTests
 from .tester import Tester
 
 warnings.filterwarnings("ignore", category=Warning, module="docutils")

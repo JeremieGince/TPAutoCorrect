@@ -180,9 +180,7 @@ class Tester:
             self.get_code_coverage(),
             weight=self.weights[self.CODE_COVERAGE_KEY],
         )
-        self.test_cases_summary = deepcopy(
-            self.get_test_cases_summary(self.dot_report_json_path)
-        )
+        self.test_cases_summary = deepcopy(self.get_test_cases_summary(self.dot_report_json_path))
         self.report.add(
             self.PERCENT_PASSED_KEY,
             self.test_cases_summary[self.PERCENT_PASSED_KEY],
@@ -195,13 +193,9 @@ class Tester:
         )
 
         if self.master_tests_src is not None:
-            self.master_tests_src.rename_test_files(
-                pattern=self.MASTER_TESTS_RENAME_PATTERN
-            )
+            self.master_tests_src.rename_test_files(pattern=self.MASTER_TESTS_RENAME_PATTERN)
             self._run_master_pytest(**kwargs)
-            self.master_test_cases_summary = deepcopy(
-                self.get_test_cases_summary(self.master_dot_report_json_path)
-            )
+            self.master_test_cases_summary = deepcopy(self.get_test_cases_summary(self.master_dot_report_json_path))
             self.report.add(
                 self.MASTER_PERCENT_PASSED_KEY,
                 self.master_test_cases_summary[self.PERCENT_PASSED_KEY],
@@ -255,19 +249,14 @@ class Tester:
             coverage_file = utils.reindent_json_file(self.coverage_json_path)
             coverage_data = json.load(open(coverage_file))
         except Exception as err:
-            warnings.warn(
-                f"Could not reindent or load {self.coverage_json_path=} -> {err}"
-            )
+            warnings.warn(f"Could not reindent or load {self.coverage_json_path=} -> {err}")
             return 0.0
         summaries = [
             d["summary"]
             for f, d in coverage_data["files"].items()
-            if f.endswith(".py")
-            and utils.is_subpath_in_path(self.code_src.local_path, f)
+            if f.endswith(".py") and utils.is_subpath_in_path(self.code_src.local_path, f)
         ]
-        mean_percent_covered = sum([s["percent_covered"] for s in summaries]) / len(
-            summaries
-        )
+        mean_percent_covered = sum([s["percent_covered"] for s in summaries]) / len(summaries)
         return mean_percent_covered
 
     def get_test_cases_summary(self, dot_report_json_path: Optional[str] = None):
@@ -299,9 +288,7 @@ class Tester:
         src_test_case_result = src_test_case.run()
         tests_test_case = PEP8TestCase(self.PEP8_KEY, self.tests_src.local_path)
         tests_test_case_result = tests_test_case.run()
-        return (
-            src_test_case_result.percent_value + tests_test_case_result.percent_value
-        ) / 2.0
+        return (src_test_case_result.percent_value + tests_test_case_result.percent_value) / 2.0
 
     def move_temp_files_to_report_dir(self, **kwargs):
         for f in self.temp_files:
@@ -309,9 +296,7 @@ class Tester:
                 shutil.move(f, self.report_dir)
             except shutil.Error as e:
                 if kwargs.get("debug", False):
-                    self.logging_func(
-                        f"shutil.move({f},{self.report_dir}) -> raises: {e}"
-                    )
+                    self.logging_func(f"shutil.move({f},{self.report_dir}) -> raises: {e}")
         return self
 
     def clear_pycache(self):
@@ -329,15 +314,11 @@ class Tester:
         for src in self.all_sources:
             src.clear_temporary_files()
 
-    def push_report_to(
-        self, push_report_to: Optional[str] = "auto", **kwargs
-    ) -> "Tester":
+    def push_report_to(self, push_report_to: Optional[str] = "auto", **kwargs) -> "Tester":
         if push_report_to is None or push_report_to == "auto":
             push_report_to = self.kwargs.get("push_report_to", push_report_to)
         if push_report_to is None or push_report_to == "auto":
-            self.logging_func(
-                f"trying to detect git repo url from {self.code_src.working_dir}"
-            )
+            self.logging_func(f"trying to detect git repo url from {self.code_src.working_dir}")
             push_report_to = utils.get_git_repo_url(
                 self.code_src.working_dir,
             )

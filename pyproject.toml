@@ -30,3 +30,27 @@ dev = [
     "isort>=6.1.0",
     "mypy>=1.19.1",
 ]
+
+[tool.coverage.report]
+exclude_also = [
+    'def __repr__',
+    'if self.debug:',
+    'if settings.DEBUG',
+    'raise AssertionError',
+    'raise NotImplementedError',
+    'if __name__ == .__main__.:',
+    'if TYPE_CHECKING:',
+    '@(abc\.)?abstractmethod',
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "pythonbasictools",
+]
+ignore_missing_imports = true
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
