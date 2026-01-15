@@ -6,7 +6,11 @@ __copyright__ = "Copyright 2023, Jérémie Gince"
 __license__ = "Apache 2.0"
 __url__ = "https://github.com/JeremieGince/TPAutoCorrect"
 __package__ = "tac"
-__version__ = importlib_metadata.version(__package__)
+
+try:
+    __version__ = importlib_metadata.version(__package__)
+except importlib_metadata.PackageNotFoundError:
+    __version__ = "0.0.0"
 
 import warnings
 

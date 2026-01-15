@@ -37,6 +37,7 @@ jobs:
       run: |
         uv venv .venv
         uv sync --locked --dev
+        uv run pip install -e .
     - name: Test Linting
       run: |
         uv run black src tests --check --diff
@@ -90,6 +91,7 @@ jobs:
       run: |
         uv venv .venv
         uv sync --locked --dev
+        uv run pip install -e .
     - name: Test Unittests with pytest
       run: |
         uv run pytest tests -n=auto --session-timeout=600
