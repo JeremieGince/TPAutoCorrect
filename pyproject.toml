@@ -13,7 +13,6 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 readme = "README.md"
-dynamic = ["readme"]
 requires-python = ">=3.9, <3.15"
 dependencies = [
   "gitpython>=3.1.46",
@@ -27,44 +26,30 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "black>=25.11.0",
-    "isort>=6.1.0",
-    "mypy>=1.19.1",
-    "pytest-timeout>=2.4.0",
-    "pytest-xdist>=3.7.0,<4",
+  "black>=25.11.0",
+  "isort>=6.1.0",
+  "mypy>=1.19.1",
+  "pytest-timeout>=2.4.0",
+  "pytest-xdist>=3.7.0,<4",
 ]
-
-[tool.setuptools.dynamic]
-readme = {file = "README.md", content-type = "text/markdown"}
-
-[tool.setuptools]
-package-dir = {"" = "src"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
 
 [tool.coverage.report]
 exclude_also = [
-    'def __repr__',
-    'if self.debug:',
-    'if settings.DEBUG',
-    'raise AssertionError',
-    'raise NotImplementedError',
-    'if __name__ == .__main__.:',
-    'if TYPE_CHECKING:',
-    '@(abc\.)?abstractmethod',
+  'def __repr__',
+  'if self.debug:',
+  'if settings.DEBUG',
+  'raise AssertionError',
+  'raise NotImplementedError',
+  'if __name__ == .__main__.:',
+  'if TYPE_CHECKING:',
+  '@(abc\.)?abstractmethod',
 ]
 
 [tool.pytest.ini_options]
-pythonpath = [
-  ".", "src",
-]
+pythonpath = [".", "src"]
 
 [[tool.mypy.overrides]]
-module = [
-    "pythonbasictools",
-    "pycodestyle",
-]
+module = ["pythonbasictools", "pycodestyle"]
 ignore_missing_imports = true
 
 [tool.black]
