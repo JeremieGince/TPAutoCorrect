@@ -1,56 +1,85 @@
-[tool.pytest.ini_options]
-pythonpath = [
-  ".", "src",
+[project]
+name = "TAC"
+version = "0.1.0"
+description = ""
+authors = [{ name = "Jérémie Gince", email = "gincejeremie@gmail.com" }]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Operating System :: OS Independent",
 ]
-addopts = [
-    "--cov=src",
-    "--durations=10",
+dynamic = ["readme"]
+requires-python = ">=3.9, <3.15"
+dependencies = [
+  "gitpython>=3.1.46",
+  "numpy (>=1.23,<3.0.0)",
+  "pycodestyle>=2.14.0",
+  "pytest>=8.3.5,<10",
+  "pytest-cov>=7.0.0",
+  "pytest-json-report>=1.5.0",
+  "pythonbasictools>=0.0.3",
 ]
 
+[dependency-groups]
+dev = [
+    "black>=25.11.0",
+    "build>=1.4.0",
+    "isort>=6.1.0",
+    "mypy>=1.19.1",
+    "pytest-timeout>=2.4.0",
+    "pytest-xdist>=3.7.0,<4",
+    "setuptools>=80.9.0",
+    "twine>=6.2.0",
+    "wheel>=0.45.1",
+]
 
 [build-system]
 requires = [
-  "setuptools",
-  "wheel",
-  "pythonbasictools",
-  "numpy",
-  "matplotlib",
+    "setuptools>=80.9.0",
+    "wheel>=0.45.1",
+    "twine>=6.2.0",
 ]
 build-backend = "setuptools.build_meta"
 
-
-
-[project]
-name = "TAC"
-dynamic = ["version", "readme", "urls"]
-description = ""
-authors = [
-  { name="Jérémie Gince", email="gincejeremie@gmail.com" },
-]
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: Apache Software License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Operating System :: OS Independent",
-]
-requires-python = ">=3.8"
-dependencies = [
-    "numpy>=1.22.3",
-    "setuptools>=57.0.0",
-    "pytest>=7.1.2",
-    "pytest_cov>=4.1.0",
-    "pytest_json_report>=1.5.0",
-    "pycodestyle>=2.11.1",
-    "GitPython>=3.1.40",
-    "pythonbasictools>=0.0.1a10",
-]
-
+[tool.setuptools.dynamic]
+readme = {file = "README.md", content-type = "text/markdown"}
 
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.coverage.report]
+exclude_also = [
+    'def __repr__',
+    'if self.debug:',
+    'if settings.DEBUG',
+    'raise AssertionError',
+    'raise NotImplementedError',
+    'if __name__ == .__main__.:',
+    'if TYPE_CHECKING:',
+    '@(abc\.)?abstractmethod',
+]
+
+[tool.pytest.ini_options]
+pythonpath = [
+  ".", "src",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "pythonbasictools",
+    "pycodestyle",
+]
+ignore_missing_imports = true
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"

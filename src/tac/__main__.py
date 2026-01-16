@@ -2,12 +2,12 @@ import argparse
 import sys
 
 from . import (
+    Report,
     SourceCode,
-    SourceTests,
     SourceMasterCode,
     SourceMasterTests,
+    SourceTests,
     Tester,
-    Report,
 )
 
 
@@ -82,7 +82,7 @@ def parse_args():
         type=str,
         default=None,
         help="Push report file to a git repository. "
-             "If equal to 'auto' the repository of the current project will be used if found.",
+        "If equal to 'auto' the repository of the current project will be used if found.",
     )
     parser.add_argument(
         "--clear-pytest-temporary-files",
@@ -100,8 +100,8 @@ def parse_args():
         "--rm-report-dir",
         action="store_true",
         help="Remove the report directory. "
-             "This option is useful when the report file is pushed to a git repository"
-             " and the report directory is no longer needed.",
+        "This option is useful when the report file is pushed to a git repository"
+        " and the report directory is no longer needed.",
     )
     parser.add_argument(
         "--grade-min",
@@ -138,17 +138,17 @@ def main():
     else:
         master_tests_source = SourceMasterTests(src_path=args.master_tests_src_path, url=args.master_tests_src_url)
     weights = Tester.DEFAULT_WEIGHTS.copy()
-    weights.update({
-        key: getattr(args, f"{key}_weight", default_weight)
-        for key, default_weight in Tester.DEFAULT_WEIGHTS.items()
-    })
+    weights.update(
+        {key: getattr(args, f"{key}_weight", default_weight) for key, default_weight in Tester.DEFAULT_WEIGHTS.items()}
+    )
     report_kwargs = {
         "grade_min": args.grade_min,
         "grade_min_value": args.grade_min_value,
         "grade_max": args.grade_max,
     }
     tester = Tester(
-        code_source, test_source,
+        code_source,
+        test_source,
         master_code_src=master_code_source,
         master_tests_src=master_tests_source,
         report_dir=args.report_dir,
@@ -159,7 +159,7 @@ def main():
     tester.run(
         overwrite=args.overwrite,
         debug=args.debug,
-        clear_pytest_temporary_files=args.clear_pytest_temporary_files
+        clear_pytest_temporary_files=args.clear_pytest_temporary_files,
     )
     report = tester.report
     if args.push_report_to is not None:
@@ -172,7 +172,7 @@ def main():
     return f"Points {int(report.grade)}/100"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Example of command:
     # python -m tac --code-src-path="Example/SimpleTP/src" --tests-src-path="Example/SimpleTP/tests" --debug --overwrite
     sys.exit(main())

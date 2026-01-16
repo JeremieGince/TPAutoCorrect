@@ -1,9 +1,9 @@
 import os
-import sys
 import shutil
-from typing import Optional, Union, List
-from importlib import util as importlib_util
+import sys
 from contextlib import contextmanager
+from importlib import util as importlib_util
+from typing import List, Optional, Union
 
 
 def find_filepath(filename: str, root: Optional[str] = None) -> Optional[str]:
@@ -36,6 +36,7 @@ def shutil_onerror(func, path, exc_info):
     Usage : ``shutil.rmtree(path, onerror=onerror)``
     """
     import stat
+
     # Is the error an access error?
     if not os.access(path, os.W_OK):
         os.chmod(path, stat.S_IWUSR)
@@ -143,6 +144,7 @@ def is_subpath_in_path(subpath: str, path: str) -> bool:
 @contextmanager
 def add_to_path(p):
     import sys
+
     old_path = sys.path
     old_modules = sys.modules
     sys.modules = old_modules.copy()
@@ -158,38 +160,38 @@ def add_to_path(p):
 class PathImport:
     def __init__(self, filepath: str):
         self.filepath = os.path.abspath(os.path.normpath(filepath))
-        self._module = None
-        self._spec = None
-        self.added_sys_modules = []
-        
+        self._module: Optional[str] = None
+        self._spec: Optional[str] = None
+        self.added_sys_modules: List[str] = []
+
     @property
     def module_name(self):
         return self.get_module_name(self.filepath)
-    
+
     @property
     def module(self):
         if self._module is None:
             self._module, self._spec = self.path_import()
         return self._module
-    
+
     @property
     def spec(self):
         if self._spec is None:
             self._module, self._spec = self.path_import()
         return self._spec
-    
+
     def add_sys_module(self, module_name: str, module):
         self.added_sys_modules.append(module_name)
         sys.modules[module_name] = module
         return self
-    
+
     def remove_sys_module(self, module_name: str):
         if module_name in self.added_sys_modules:
             self.added_sys_modules.remove(module_name)
         if module_name in sys.modules:
             sys.modules.pop(module_name)
         return self
-    
+
     def clear_sys_modules(self):
         for module_name in self.added_sys_modules:
             if module_name in sys.modules:
@@ -199,16 +201,16 @@ class PathImport:
 
     def add_sibling_modules(self, sibling_dirname: Optional[str] = None):
         sibling_dirname = sibling_dirname or os.path.dirname(self.filepath)
-        skip_pyfiles = [os.path.basename(self.filepath), '__init__.py', '__main__.py']
+        skip_pyfiles = [os.path.basename(self.filepath), "__init__.py", "__main__.py"]
         for current, subdir, files in os.walk(sibling_dirname):
             for file_py in files:
                 python_file = os.path.join(current, file_py)
-                if (not file_py.endswith('.py')) or (file_py in skip_pyfiles):
+                if (not file_py.endswith(".py")) or (file_py in skip_pyfiles):
                     continue
                 (module, spec) = self.path_import(python_file)
                 self.add_sys_module(spec.name, module)
         return self
-    
+
     def get_module_name(self, filepath: Optional[str] = None):
         filepath = filepath or self.filepath
         filename = os.path.basename(filepath)
@@ -218,11 +220,11 @@ class PathImport:
     def path_import(self, absolute_path: Optional[str] = None):
         absolute_path = absolute_path or self.filepath
         spec = importlib_util.spec_from_file_location(self.get_module_name(absolute_path), absolute_path)
-        module = importlib_util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        self._module, self._spec = module, spec
+        module: str = importlib_util.module_from_spec(spec)  # type: ignore
+        spec.loader.exec_module(module)  # type: ignore
+        self._module, self._spec = module, spec  # type: ignore
         return module, spec
-    
+
     def __repr__(self):
         return f"{self.__class__.__name__}(filepath={self.filepath})"
 
@@ -244,14 +246,15 @@ def import_obj_from_file(obj_name: str, filepath: str):
 
 
 def push_file_to_git_repo(
-        filepath: str,
-        repo_url: str,
-        repo_branch: str = "main",
-        local_tmp_path: str = "tmp_repo",
-        rm_tmp_repo: bool = True,
+    filepath: str,
+    repo_url: str,
+    repo_branch: str = "main",
+    local_tmp_path: str = "tmp_repo",
+    rm_tmp_repo: bool = True,
 ):
     import git
     from git import rmtree
+
     repo = git.Repo.clone_from(repo_url, local_tmp_path)
     repo.git.checkout(repo_branch)
     file_basename = os.path.basename(filepath)
@@ -268,6 +271,7 @@ def push_file_to_git_repo(
 def get_git_repo_url(working_dir: str, search_parent_directories: bool = True) -> Optional[str]:
     try:
         import git
+
         repo = git.Repo(working_dir, search_parent_directories=search_parent_directories)
         return repo.remotes.origin.url
     except Exception:

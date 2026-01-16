@@ -296,3 +296,6 @@ user/
 tests/tmp
 .report.json
 report_dir
+report_dir_default
+report_dir_git
+
