@@ -12,14 +12,74 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Operating System :: OS Independent",
 ]
-readme = "README.md"
-requires-python = ">=3.9, <=3.14"
+dynamic = ["readme"]
+requires-python = ">=3.9, <3.15"
 dependencies = [
   "gitpython>=3.1.46",
-  "numpy>=2.4.0",
+  "numpy (>=1.23,<3.0.0)",
   "pycodestyle>=2.14.0",
-  "pytest>=9.0.2",
+  "pytest>=8.3.5,<10",
   "pytest-cov>=7.0.0",
   "pytest-json-report>=1.5.0",
   "pythonbasictools>=0.0.3",
 ]
+
+[dependency-groups]
+dev = [
+    "black>=25.11.0",
+    "build>=1.4.0",
+    "isort>=6.1.0",
+    "mypy>=1.19.1",
+    "pytest-timeout>=2.4.0",
+    "pytest-xdist>=3.7.0,<4",
+    "setuptools>=80.9.0",
+    "twine>=6.2.0",
+    "wheel>=0.45.1",
+]
+
+[build-system]
+requires = [
+    "setuptools>=80.9.0",
+    "wheel>=0.45.1",
+    "twine>=6.2.0",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+readme = {file = "README.md", content-type = "text/markdown"}
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.coverage.report]
+exclude_also = [
+    'def __repr__',
+    'if self.debug:',
+    'if settings.DEBUG',
+    'raise AssertionError',
+    'raise NotImplementedError',
+    'if __name__ == .__main__.:',
+    'if TYPE_CHECKING:',
+    '@(abc\.)?abstractmethod',
+]
+
+[tool.pytest.ini_options]
+pythonpath = [
+  ".", "src",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "pythonbasictools",
+    "pycodestyle",
+]
+ignore_missing_imports = true
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"

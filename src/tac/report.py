@@ -44,13 +44,14 @@ class Report:
     :ivar kwargs: Additional keyword arguments.
     :vartype kwargs: dict
     """
+
     VALUE_KEY = "value"
     WEIGHT_KEY = "weight"
     DEFAULT_GRADE_MIN = 0.0
     DEFAULT_GRADE_MAX = 100.0
     DEFAULT_GRADE_MIN_VALUE = 0.0
-    
-    def __init__(self, data: dict = None, report_filepath: str = None, *args, **kwargs):
+
+    def __init__(self, data: Optional[dict] = None, report_filepath: Optional[str] = None, *args, **kwargs):
         self.data = data
         self.report_filepath = report_filepath
         self.grade_min = kwargs.pop("grade_min", self.DEFAULT_GRADE_MIN)
@@ -59,92 +60,95 @@ class Report:
         self.grade_norm_func: Optional[Callable[[float], float]] = kwargs.pop("grade_norm_func", None)
         self.args = args
         self.kwargs = kwargs
-        
+
         self._initialize_data_()
-    
+
     @property
     def grade(self) -> float:
         return self.get_grade()
-    
+
     @property
     def is_normalized(self) -> bool:
         return np.isclose(sum([self.get_weight(k) for k in self.keys()]), 1.0)
-    
+
     def _initialize_data_(self):
         if self.data is None:
             self.data = {}
-    
+
     def get_state(self) -> dict:
         return {
-            "grade"          : self.grade,
-            "data"           : self.data,
+            "grade": self.grade,
+            "data": self.data,
             "report_filepath": self.report_filepath,
-            "args"           : self.args,
-            "kwargs"         : self.kwargs,
+            "args": self.args,
+            "kwargs": self.kwargs,
         }
-    
+
     def set_state(self, state: dict):
         self.data = state["data"]
         self.report_filepath = state["report_filepath"]
         self.args = state["args"]
         self.kwargs = state["kwargs"]
-    
+
     def add(self, key, value, weight=1.0):
         self.data[key] = {self.VALUE_KEY: value, self.WEIGHT_KEY: weight}
-    
+
     def get(self, key, default=None):
         return self.data.get(key, default)
-    
+
     def get_value(self, key, default=None):
         value = self.get(key, default)
         if value is None:
             return value
         return value[self.VALUE_KEY]
-    
+
     def get_weight(self, key, default=None):
         value = self.get(key, default)
         if value is None:
             return value
         return value[self.WEIGHT_KEY]
-    
+
     def get_weighted(self, key, default=None):
         value = self.get_value(key, default)
         weight = self.get_weight(key, default)
         if value is None or weight is None:
             return None
         return value * weight
-    
+
     def get_item(self, key, default=None):
         return key, self.get(key, default)
-    
+
     def keys(self):
         return self.data.keys()
-    
+
     def __getitem__(self, item):
         return self.data[item]
-    
+
     def __setitem__(self, key, value, weight=1.0):
         if isinstance(value, tuple):
             assert len(value) == 2, "value must be a tuple of length 2"
             self.data[key] = value
         else:
             self.data[key] = (value, weight)
-    
+
     def normalize_weights_(self) -> "Report":
         total_weight = sum([self.get_weight(k) for k in self.keys()])
         for k in self.keys():
-            self.data[k][self.WEIGHT_KEY] = self.get_weight(k) / total_weight
+            self.data[k][self.WEIGHT_KEY] = self.get_weight(k) / total_weight  # type: ignore
         return self
-    
+
     def get_normalized(self) -> "Report":
         total_weight = sum([self.get_weight(k) for k in self.keys()])
         return Report(
             {
-                k: {self.VALUE_KEY: self.get_value(k), self.WEIGHT_KEY: self.get_weight(k) / total_weight}
+                k: {
+                    self.VALUE_KEY: self.get_value(k),
+                    self.WEIGHT_KEY: self.get_weight(k) / total_weight,
+                }
                 for k in self.keys()
             }
         )
-    
+
     def get_grade(self) -> float:
         if self.is_normalized:
             report = self
@@ -156,39 +160,41 @@ class Report:
         if self.grade_norm_func is not None:
             grade = self.grade_norm_func(grade)
         return grade
-    
-    def save(self, report_filepath: str = None):
+
+    def save(self, report_filepath: Optional[str] = None):
         if report_filepath is not None:
             self.report_filepath = report_filepath
         assert self.report_filepath is not None, "report_filepath must be initialized before saving"
         with open(self.report_filepath, "w") as f:
             json.dump(self.get_state(), f, indent=4)
         return self.report_filepath
-    
-    def load(self, report_filepath: str = None):
+
+    def load(self, report_filepath: Optional[str] = None):
         if report_filepath is not None:
             self.report_filepath = report_filepath
         assert self.report_filepath is not None, "report_filepath must be initialized before loading"
         with open(self.report_filepath, "r") as f:
             self.set_state(json.load(f))
         return self
-    
+
     def __repr__(self):
-        return (f"{self.__class__.__name__}("
-                f"grade={self.grade}, "
-                f"data={self.data}, "
-                f"report_filepath={self.report_filepath}"
-                f")")
-    
+        return (
+            f"{self.__class__.__name__}("
+            f"grade={self.grade}, "
+            f"data={self.data}, "
+            f"report_filepath={self.report_filepath}"
+            f")"
+        )
+
     def __str__(self):
         json_str = json.dumps(self.get_state(), indent=4)
         return f"{self.__class__.__name__}({json_str})"
-    
+
     def __len__(self):
         return len(self.data)
-    
+
     def __iter__(self):
         return iter(self.data)
-    
+
     def __contains__(self, item):
         return item in self.data
