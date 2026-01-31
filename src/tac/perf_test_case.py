@@ -1,5 +1,10 @@
+import sys
+import re
+from io import StringIO
+
 import numpy as np
 import pycodestyle
+from pylint.lint import Run
 
 
 class TestResult:
@@ -21,7 +26,7 @@ class TestCase:
         raise NotImplementedError
 
 
-class PEP8TestCase(TestCase):
+class PEP8TestCasePyCodeStyle(TestCase):
     MAX_LINE_LENGTH = 120
 
     def __init__(self, name: str, files_dir: str):
@@ -38,3 +43,31 @@ class PEP8TestCase(TestCase):
             err_ratio = result.total_errors / result.counters["physical lines"]
         percent_value = np.clip(100.0 - (err_ratio * 100.0), 0.0, 100.0).item()
         return TestResult(self.name, percent_value, message=message)
+
+
+class PEP8TestCasePylint(TestCase):
+    MAX_LINE_LENGTH = 120
+    
+    def __init__(self, name: str, files_dir: str):
+        self.name = name
+        self.files_dir = files_dir
+
+    def _run_pylint(self):
+        output = StringIO()
+        sys.stdout = output
+        try:
+            Run([self.files_dir, f'--max-line-length={self.MAX_LINE_LENGTH}', '--exit-zero'])
+        except SystemExit:
+            pass
+        sys.stdout = sys.__stdout__
+        pylint_output = output.getvalue()
+        match = re.search(r"Your code has been rated at ([\d\.]+)/10", pylint_output)
+        if match:
+            score = float(match.group(1))
+            percent_value = 10 * score
+            return TestResult(self.name, percent_value, message=None)
+        else:
+            return None, None
+
+
+PEP8TestCase = PEP8TestCasePylint
