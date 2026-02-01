@@ -7,6 +7,15 @@ from typing import List, Optional, Union
 
 
 def find_filepath(filename: str, root: Optional[str] = None) -> Optional[str]:
+    """Find the first occurrence of a file with the given filename in the directory tree starting at root.
+
+    Args:
+        filename (str): The name of the file to search for.
+        root (Optional[str], optional): The root directory to start searching from. Defaults to current working directory.
+
+    Returns:
+        Optional[str]: The full path to the file if found, otherwise None.
+    """
     root = root or os.getcwd()
     for root, dirs, files in os.walk(root):
         for file in files:
@@ -16,6 +25,15 @@ def find_filepath(filename: str, root: Optional[str] = None) -> Optional[str]:
 
 
 def find_dir(dirname: str, root: Optional[str] = None) -> Optional[str]:
+    """Find the first occurrence of a directory with the given name in the directory tree starting at root.
+
+    Args:
+        dirname (str): The name of the directory to search for.
+        root (Optional[str], optional): The root directory to start searching from. Defaults to current working directory.
+
+    Returns:
+        Optional[str]: The full path to the directory if found, otherwise None.
+    """
     root = root or os.getcwd()
     for root, dirs, files in os.walk(root):
         for _dir in dirs:
@@ -46,6 +64,14 @@ def shutil_onerror(func, path, exc_info):
 
 
 def rm_file(filepath: Optional[str] = None):
+    """Remove a file if it exists.
+
+    Args:
+        filepath (Optional[str], optional): The path to the file to remove. If None, does nothing.
+
+    Raises:
+        ValueError: If the path exists but is not a file.
+    """
     if filepath is None:
         return
     if not os.path.exists(filepath):
@@ -59,6 +85,12 @@ def rm_file(filepath: Optional[str] = None):
 
 
 def try_rmtree(path: str, ignore_errors: bool = True):
+    """Attempt to remove a directory tree, ignoring errors if specified.
+
+    Args:
+        path (str): The directory path to remove.
+        ignore_errors (bool, optional): Whether to ignore errors. Defaults to True.
+    """
     try:
         shutil.rmtree(path, ignore_errors=ignore_errors, onerror=shutil_onerror)
     except FileNotFoundError:
@@ -66,6 +98,12 @@ def try_rmtree(path: str, ignore_errors: bool = True):
 
 
 def try_rm_trees(paths: Union[str, List[str]], ignore_errors: bool = True):
+    """Remove one or more directory trees.
+
+    Args:
+        paths (Union[str, List[str]]): A single path or a list of paths to remove.
+        ignore_errors (bool, optional): Whether to ignore errors. Defaults to True.
+    """
     if isinstance(paths, str):
         paths = [paths]
     for path in paths:
@@ -73,6 +111,15 @@ def try_rm_trees(paths: Union[str, List[str]], ignore_errors: bool = True):
 
 
 def rm_direnames_from_root(dirnames: Union[str, List[str]], root: Optional[str] = None):
+    """Remove directories with specified names from the directory tree starting at root.
+
+    Args:
+        dirnames (Union[str, List[str]]): Directory name or list of names to remove.
+        root (Optional[str], optional): Root directory to start from. Defaults to current working directory.
+
+    Returns:
+        bool: Always returns True.
+    """
     if isinstance(dirnames, str):
         dirnames = [dirnames]
     root = root or os.getcwd()
@@ -83,7 +130,18 @@ def rm_direnames_from_root(dirnames: Union[str, List[str]], root: Optional[str] 
     return True
 
 
-def rm_filetypes_from_root(filetypes: Union[str, List[str]], root: Optional[str] = None):
+def rm_filetypes_from_root(
+    filetypes: Union[str, List[str]], root: Optional[str] = None
+):
+    """Remove files with specified extensions from the directory tree starting at root.
+
+    Args:
+        filetypes (Union[str, List[str]]): File extension or list of extensions to remove.
+        root (Optional[str], optional): Root directory to start from. Defaults to current working directory.
+
+    Returns:
+        bool: Always returns True.
+    """
     if isinstance(filetypes, str):
         filetypes = [filetypes]
     root = root or os.getcwd()
@@ -95,22 +153,64 @@ def rm_filetypes_from_root(filetypes: Union[str, List[str]], root: Optional[str]
 
 
 def rm_pycache(root: Optional[str] = None):
+    """Remove all __pycache__ directories from the directory tree starting at root.
+
+    Args:
+        root (Optional[str], optional): Root directory to start from. Defaults to current working directory.
+
+    Returns:
+        bool: Always returns True.
+    """
     return rm_direnames_from_root("__pycache__", root=root)
 
 
 def rm_pyc_files(root: Optional[str] = None):
+    """Remove all .pyc files from the directory tree starting at root.
+
+    Args:
+        root (Optional[str], optional): Root directory to start from. Defaults to current working directory.
+
+    Returns:
+        bool: Always returns True.
+    """
     return rm_filetypes_from_root(".pyc", root=root)
 
 
 def rm_pyo_files(root: Optional[str] = None):
+    """Remove all .pyo files from the directory tree starting at root.
+
+    Args:
+        root (Optional[str], optional): Root directory to start from. Defaults to current working directory.
+
+    Returns:
+        bool: Always returns True.
+    """
     return rm_filetypes_from_root(".pyo", root=root)
 
 
 def rm_pytest_cache(root: Optional[str] = None):
+    """Remove all .pytest_cache directories from the directory tree starting at root.
+
+    Args:
+        root (Optional[str], optional): Root directory to start from. Defaults to current working directory.
+
+    Returns:
+        bool: Always returns True.
+    """
     return rm_direnames_from_root(".pytest_cache", root=root)
 
 
 def reindent_json_file(filepath: str, indent: int = 4, dont_exist_ok: bool = True):
+    """Reformat a JSON file with the specified indentation.
+
+    Args:
+        filepath (str): Path to the JSON file.
+        indent (int, optional): Number of spaces for indentation. Defaults to 4.
+        dont_exist_ok (bool, optional): If True, do nothing if file does not exist. If False, raise FileNotFoundError.
+
+    Returns:
+        Optional[str]: The filepath if successful, otherwise None.
+    """
     import json
 
     if not os.path.exists(filepath):
@@ -128,6 +228,15 @@ def reindent_json_file(filepath: str, indent: int = 4, dont_exist_ok: bool = Tru
 
 
 def is_file_in_dir(filename: str, dirpath: str) -> bool:
+    """Check if a file with the given name exists in the directory tree.
+
+    Args:
+        filename (str): The name of the file to search for.
+        dirpath (str): The directory path to search in.
+
+    Returns:
+        bool: True if the file is found, False otherwise.
+    """
     for root, dirs, files in os.walk(dirpath):
         for file in files:
             if file == filename:
@@ -136,6 +245,15 @@ def is_file_in_dir(filename: str, dirpath: str) -> bool:
 
 
 def is_subpath_in_path(subpath: str, path: str) -> bool:
+    """Check if subpath is a substring of path after resolving absolute paths.
+
+    Args:
+        subpath (str): The subpath to check.
+        path (str): The path to check within.
+
+    Returns:
+        bool: True if subpath is in path, False otherwise.
+    """
     subpath = os.path.abspath(subpath)
     path = os.path.abspath(path)
     return subpath in path
@@ -143,6 +261,11 @@ def is_subpath_in_path(subpath: str, path: str) -> bool:
 
 @contextmanager
 def add_to_path(p):
+    """Context manager to temporarily add a directory to sys.path.
+
+    Args:
+        p (str): The path to add to sys.path.
+    """
     import sys
 
     old_path = sys.path
@@ -158,7 +281,13 @@ def add_to_path(p):
 
 
 class PathImport:
+    """Utility class for importing Python modules from file paths."""
+
     def __init__(self, filepath: str):
+        """
+        Args:
+            filepath (str): The path to the Python file to import.
+        """
         self.filepath = os.path.abspath(os.path.normpath(filepath))
         self._module: Optional[str] = None
         self._spec: Optional[str] = None
@@ -166,26 +295,40 @@ class PathImport:
 
     @property
     def module_name(self):
+        """str: The module name derived from the file path."""
         return self.get_module_name(self.filepath)
 
     @property
     def module(self):
+        """The imported module object."""
         if self._module is None:
             self._module, self._spec = self.path_import()
         return self._module
 
     @property
     def spec(self):
+        """The importlib spec object for the module."""
         if self._spec is None:
             self._module, self._spec = self.path_import()
         return self._spec
 
     def add_sys_module(self, module_name: str, module):
+        """Add a module to sys.modules.
+
+        Args:
+            module_name (str): The name to use in sys.modules.
+            module: The module object.
+        """
         self.added_sys_modules.append(module_name)
         sys.modules[module_name] = module
         return self
 
     def remove_sys_module(self, module_name: str):
+        """Remove a module from sys.modules.
+
+        Args:
+            module_name (str): The name to remove from sys.modules.
+        """
         if module_name in self.added_sys_modules:
             self.added_sys_modules.remove(module_name)
         if module_name in sys.modules:
@@ -193,6 +336,7 @@ class PathImport:
         return self
 
     def clear_sys_modules(self):
+        """Remove all modules added by this instance from sys.modules."""
         for module_name in self.added_sys_modules:
             if module_name in sys.modules:
                 sys.modules.pop(module_name)
@@ -200,6 +344,11 @@ class PathImport:
         return self
 
     def add_sibling_modules(self, sibling_dirname: Optional[str] = None):
+        """Import and add all sibling Python modules in the same directory to sys.modules.
+
+        Args:
+            sibling_dirname (Optional[str], optional): Directory to search for sibling modules. Defaults to the file's directory.
+        """
         sibling_dirname = sibling_dirname or os.path.dirname(self.filepath)
         skip_pyfiles = [os.path.basename(self.filepath), "__init__.py", "__main__.py"]
         for current, subdir, files in os.walk(sibling_dirname):
@@ -212,34 +361,70 @@ class PathImport:
         return self
 
     def get_module_name(self, filepath: Optional[str] = None):
+        """Get the module name from a file path.
+
+        Args:
+            filepath (Optional[str], optional): The file path. Defaults to self.filepath.
+
+        Returns:
+            str: The module name.
+        """
         filepath = filepath or self.filepath
         filename = os.path.basename(filepath)
         module_name = filename.rsplit(".", 1)[0]
         return module_name
 
     def path_import(self, absolute_path: Optional[str] = None):
+        """Import a module from a file path.
+
+        Args:
+            absolute_path (Optional[str], optional): The absolute path to the file. Defaults to self.filepath.
+
+        Returns:
+            Tuple[module, spec]: The imported module and its spec.
+        """
         absolute_path = absolute_path or self.filepath
-        spec = importlib_util.spec_from_file_location(self.get_module_name(absolute_path), absolute_path)
+        spec = importlib_util.spec_from_file_location(
+            self.get_module_name(absolute_path), absolute_path
+        )
         module: str = importlib_util.module_from_spec(spec)  # type: ignore
         spec.loader.exec_module(module)  # type: ignore
         self._module, self._spec = module, spec  # type: ignore
         return module, spec
 
     def __repr__(self):
+        """Return a string representation of the PathImport instance."""
         return f"{self.__class__.__name__}(filepath={self.filepath})"
 
 
 def get_module_from_file(filepath: str):
+    """Import and return a module from a file path, handling sibling imports if necessary.
+
+    Args:
+        filepath (str): The path to the Python file.
+
+    Returns:
+        module: The imported module object.
+    """
     path_import = PathImport(filepath)
     try:
         module, spec = path_import.path_import()
-    except (ImportError, ModuleNotFoundError) as err:
+    except (ImportError, ModuleNotFoundError):
         path_import.add_sibling_modules()
         module, spec = path_import.path_import()
     return module
 
 
 def import_obj_from_file(obj_name: str, filepath: str):
+    """Import an object by name from a Python file.
+
+    Args:
+        obj_name (str): The name of the object to import.
+        filepath (str): The path to the Python file.
+
+    Returns:
+        Any: The imported object.
+    """
     module = get_module_from_file(filepath)
     obj = getattr(module, obj_name)
     return obj
@@ -252,6 +437,18 @@ def push_file_to_git_repo(
     local_tmp_path: str = "tmp_repo",
     rm_tmp_repo: bool = True,
 ):
+    """Push a file to a remote git repository.
+
+    Args:
+        filepath (str): The path to the file to push.
+        repo_url (str): The URL of the remote git repository.
+        repo_branch (str, optional): The branch to push to. Defaults to "main".
+        local_tmp_path (str, optional): Temporary local path for the repo clone. Defaults to "tmp_repo".
+        rm_tmp_repo (bool, optional): Whether to remove the temporary repo after pushing. Defaults to True.
+
+    Returns:
+        bool: True if successful.
+    """
     import git
     from git import rmtree
 
@@ -268,11 +465,24 @@ def push_file_to_git_repo(
     return True
 
 
-def get_git_repo_url(working_dir: str, search_parent_directories: bool = True) -> Optional[str]:
+def get_git_repo_url(
+    working_dir: str, search_parent_directories: bool = True
+) -> Optional[str]:
+    """Get the remote URL of the git repository for a given working directory.
+
+    Args:
+        working_dir (str): The directory to search for a git repository.
+        search_parent_directories (bool, optional): Whether to search parent directories. Defaults to True.
+
+    Returns:
+        Optional[str]: The remote URL if found, otherwise None.
+    """
     try:
         import git
 
-        repo = git.Repo(working_dir, search_parent_directories=search_parent_directories)
+        repo = git.Repo(
+            working_dir, search_parent_directories=search_parent_directories
+        )
         return repo.remotes.origin.url
     except Exception:
         return None

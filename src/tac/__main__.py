@@ -12,6 +12,12 @@ from . import (
 
 
 def parse_args():
+    """
+    Parse command-line arguments for the TPAutoCorrect tool.
+
+    Returns:
+        argparse.Namespace: The parsed command-line arguments.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--code-src-path",
@@ -125,6 +131,14 @@ def parse_args():
 
 
 def main():
+    """
+    Main entry point for the TPAutoCorrect tool.
+
+    Parses arguments, sets up sources, runs the tester, handles report generation and optional git push.
+
+    Returns:
+        str: The final grade as a formatted string.
+    """
     args = parse_args()
     code_source = SourceCode(src_path=args.code_src_path, url=args.code_src_url)
     test_source = SourceTests(src_path=args.tests_src_path, url=args.tests_src_url)
@@ -132,14 +146,21 @@ def main():
     if args.master_code_src_path is None and args.master_code_src_url is None:
         master_code_source = None
     else:
-        master_code_source = SourceMasterCode(src_path=args.master_code_src_path, url=args.master_code_src_url)
+        master_code_source = SourceMasterCode(
+            src_path=args.master_code_src_path, url=args.master_code_src_url
+        )
     if args.master_tests_src_path is None and args.master_tests_src_url is None:
         master_tests_source = None
     else:
-        master_tests_source = SourceMasterTests(src_path=args.master_tests_src_path, url=args.master_tests_src_url)
+        master_tests_source = SourceMasterTests(
+            src_path=args.master_tests_src_path, url=args.master_tests_src_url
+        )
     weights = Tester.DEFAULT_WEIGHTS.copy()
     weights.update(
-        {key: getattr(args, f"{key}_weight", default_weight) for key, default_weight in Tester.DEFAULT_WEIGHTS.items()}
+        {
+            key: getattr(args, f"{key}_weight", default_weight)
+            for key, default_weight in Tester.DEFAULT_WEIGHTS.items()
+        }
     )
     report_kwargs = {
         "grade_min": args.grade_min,
@@ -166,7 +187,9 @@ def main():
         try:
             tester.push_report_to(args.push_report_to)
         except Exception as err:
-            tester.logging_func(f"Error while pushing report to {args.push_report_to}: {err}")
+            tester.logging_func(
+                f"Error while pushing report to {args.push_report_to}: {err}"
+            )
     if args.rm_report_dir:
         tester.rm_report_dir()
     return f"Points {int(report.grade)}/100"
