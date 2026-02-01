@@ -51,13 +51,9 @@ class Report:
         self.data = data
         self.report_filepath = report_filepath
         self.grade_min = kwargs.pop("grade_min", self.DEFAULT_GRADE_MIN)
-        self.grade_min_value = kwargs.pop(
-            "grade_min_value", self.DEFAULT_GRADE_MIN_VALUE
-        )
+        self.grade_min_value = kwargs.pop("grade_min_value", self.DEFAULT_GRADE_MIN_VALUE)
         self.grade_max = kwargs.pop("grade_max", self.DEFAULT_GRADE_MAX)
-        self.grade_norm_func: Optional[Callable[[float], float]] = kwargs.pop(
-            "grade_norm_func", None
-        )
+        self.grade_norm_func: Optional[Callable[[float], float]] = kwargs.pop("grade_norm_func", None)
         self.args = args
         self.kwargs = kwargs
 
@@ -282,9 +278,7 @@ class Report:
             report = self.get_normalized()
         grade = sum([report.get_weighted(k) for k in report.keys()])
         grade_scale = self.grade_max - self.grade_min
-        grade = (self.grade_max - self.grade_min_value) * (
-            grade - self.grade_min
-        ) / grade_scale + self.grade_min_value
+        grade = (self.grade_max - self.grade_min_value) * (grade - self.grade_min) / grade_scale + self.grade_min_value
         if self.grade_norm_func is not None:
             grade = self.grade_norm_func(grade)
         return grade
@@ -301,9 +295,7 @@ class Report:
         """
         if report_filepath is not None:
             self.report_filepath = report_filepath
-        assert self.report_filepath is not None, (
-            "report_filepath must be initialized before saving"
-        )
+        assert self.report_filepath is not None, "report_filepath must be initialized before saving"
         with open(self.report_filepath, "w") as f:
             json.dump(self.get_state(), f, indent=4)
         return self.report_filepath
@@ -320,9 +312,7 @@ class Report:
         """
         if report_filepath is not None:
             self.report_filepath = report_filepath
-        assert self.report_filepath is not None, (
-            "report_filepath must be initialized before loading"
-        )
+        assert self.report_filepath is not None, "report_filepath must be initialized before loading"
         with open(self.report_filepath, "r") as f:
             self.set_state(json.load(f))
         return self

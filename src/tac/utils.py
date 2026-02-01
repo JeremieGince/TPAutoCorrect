@@ -130,9 +130,7 @@ def rm_direnames_from_root(dirnames: Union[str, List[str]], root: Optional[str] 
     return True
 
 
-def rm_filetypes_from_root(
-    filetypes: Union[str, List[str]], root: Optional[str] = None
-):
+def rm_filetypes_from_root(filetypes: Union[str, List[str]], root: Optional[str] = None):
     """Remove files with specified extensions from the directory tree starting at root.
 
     Args:
@@ -384,9 +382,7 @@ class PathImport:
             Tuple[module, spec]: The imported module and its spec.
         """
         absolute_path = absolute_path or self.filepath
-        spec = importlib_util.spec_from_file_location(
-            self.get_module_name(absolute_path), absolute_path
-        )
+        spec = importlib_util.spec_from_file_location(self.get_module_name(absolute_path), absolute_path)
         module: str = importlib_util.module_from_spec(spec)  # type: ignore
         spec.loader.exec_module(module)  # type: ignore
         self._module, self._spec = module, spec  # type: ignore
@@ -465,9 +461,7 @@ def push_file_to_git_repo(
     return True
 
 
-def get_git_repo_url(
-    working_dir: str, search_parent_directories: bool = True
-) -> Optional[str]:
+def get_git_repo_url(working_dir: str, search_parent_directories: bool = True) -> Optional[str]:
     """Get the remote URL of the git repository for a given working directory.
 
     Args:
@@ -480,9 +474,7 @@ def get_git_repo_url(
     try:
         import git
 
-        repo = git.Repo(
-            working_dir, search_parent_directories=search_parent_directories
-        )
+        repo = git.Repo(working_dir, search_parent_directories=search_parent_directories)
         return repo.remotes.origin.url
     except Exception:
         return None

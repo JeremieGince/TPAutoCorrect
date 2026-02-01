@@ -201,18 +201,14 @@ class Source:
             self.logging_func(
                 f"Cloning repo {self.repo_name} from {self.repo_url} to {self.local_repo_tmp_dirpath} ..."
             )
-            self.repo = git.Repo.clone_from(
-                self.repo_url, self.local_repo_tmp_dirpath, branch=self.repo_branch
-            )
+            self.repo = git.Repo.clone_from(self.repo_url, self.local_repo_tmp_dirpath, branch=self.repo_branch)
             self.logging_func(
                 f"Cloning repo {self.repo_name} from {self.repo_url} to {self.local_repo_tmp_dirpath}. Done."
             )
         self.repo.git.checkout(self.repo_branch)
         self.repo.git.pull()
         if self._src_path is None:
-            self._src_path = self._try_find_default_src_dir(
-                root=self.local_repo_tmp_dirpath
-            )
+            self._src_path = self._try_find_default_src_dir(root=self.local_repo_tmp_dirpath)
         else:
             self._src_path = os.path.join(self.local_repo_tmp_dirpath, self.src_path)
         return self.repo
@@ -363,9 +359,7 @@ class SourceCode(Source):
             **kwargs: Additional keyword arguments for configuration.
         """
         super().__init__(src_path, *args, **kwargs)
-        self.code_root_folder = kwargs.get(
-            "code_root_folder", self.DEFAULT_CODE_ROOT_FOLDER
-        )
+        self.code_root_folder = kwargs.get("code_root_folder", self.DEFAULT_CODE_ROOT_FOLDER)
         self.venv = kwargs.get("venv", self.DEFAULT_VENV)
         self.reqs_path = kwargs.get("requirements_path", None)
         self.additional_requirements = kwargs.get("additional_requirements", [])
@@ -448,9 +442,7 @@ class SourceCode(Source):
             shutil.rmtree(self.venv_path)
         if not os.path.exists(self.venv_path):
             self.logging_func(f"Creating venv at {self.venv_path} ...")
-            stdout = self.send_cmd_to_process(
-                f"python -m venv {self.venv}", cwd=self.working_dir
-            )
+            stdout = self.send_cmd_to_process(f"python -m venv {self.venv}", cwd=self.working_dir)
             self.logging_func(f"Creating venv -> Done. stdout: {stdout}")
         return stdout
 
@@ -501,9 +493,7 @@ class SourceCode(Source):
             cwd=os.getcwd(),
         )
         for req in self.additional_requirements:
-            self.send_cmd_to_process(
-                f"{self.get_venv_python_path()} -m pip install {req}", cwd=os.getcwd()
-            )
+            self.send_cmd_to_process(f"{self.get_venv_python_path()} -m pip install {req}", cwd=os.getcwd())
         return std_out
 
     def send_cmd_to_process(self, cmd: str, timeout: Optional[int] = None, **kwargs):
@@ -522,9 +512,7 @@ class SourceCode(Source):
             if cmd.startswith("python"):
                 cmd = cmd.replace("python", self.get_venv_python_path())
             if cmd.startswith("pip"):
-                cmd = cmd.replace(
-                    "pip", os.path.join(self.get_venv_scripts_folder(), "pip")
-                )
+                cmd = cmd.replace("pip", os.path.join(self.get_venv_scripts_folder(), "pip"))
         return super().send_cmd_to_process(cmd, timeout=timeout, **kwargs)
 
     def clear_venv(self):
@@ -594,9 +582,7 @@ class SourceTests(Source):
         Raises:
             AssertionError: If the local path does not exist or pattern is invalid.
         """
-        assert os.path.exists(self.local_path), (
-            f"Path {self.local_path} does not exist."
-        )
+        assert os.path.exists(self.local_path), f"Path {self.local_path} does not exist."
         assert "{}" in pattern, f"Pattern {pattern} must contain {{}}."
         for root, dirs, files in os.walk(self.local_path):
             for file in files:

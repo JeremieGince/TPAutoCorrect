@@ -51,13 +51,9 @@ def auto_correct_from_git():
     """
     path_to_example = os.path.join(".", "Example", "SimpleTP")
     repo_url = tac.__url__
-    code_source = tac.SourceCode(
-        os.path.join(path_to_example, "src"), url=repo_url, logging_func=print
-    )
+    code_source = tac.SourceCode(os.path.join(path_to_example, "src"), url=repo_url, logging_func=print)
     print(code_source)
-    tests_source = tac.SourceTests(
-        os.path.join(path_to_example, "tests"), url=repo_url, logging_func=print
-    )
+    tests_source = tac.SourceTests(os.path.join(path_to_example, "tests"), url=repo_url, logging_func=print)
     print(tests_source)
     master_tests_source = tac.SourceMasterTests(
         os.path.join(path_to_example, "master_tests"), url=repo_url, logging_func=print

@@ -92,13 +92,9 @@ class PEP8TestCase(TestCase):
         Returns:
             TestResult: The result of the PEP8 compliance test.
         """
-        pep8style = pycodestyle.StyleGuide(
-            ignore="W191,E501", max_line_length=self.MAX_LINE_LENGTH, quiet=True
-        )
+        pep8style = pycodestyle.StyleGuide(ignore="W191,E501", max_line_length=self.MAX_LINE_LENGTH, quiet=True)
         result = pep8style.check_files([self.files_dir])
-        message = ", ".join(
-            set([f"{key}:'{err_msg}'" for key, err_msg in result.messages.items()])
-        )
+        message = ", ".join(set([f"{key}:'{err_msg}'" for key, err_msg in result.messages.items()]))
         if result.counters["physical lines"] == 0:
             err_ratio = 0.0
         else:
