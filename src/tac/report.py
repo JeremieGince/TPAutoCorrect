@@ -11,15 +11,14 @@ class Report:
     Stores key-value pairs with associated weights, computes a weighted grade, supports normalization,
     and provides methods for saving/loading report state to/from a file.
 
-    Attributes:
-        data (dict): The data stored in the report.
-        report_filepath (str): The filepath to save or load the report.
-        grade_min (float): The minimum grade for the report.
-        grade_min_value (float): The value of the report when the grade is the minimum.
-        grade_max (float): The maximum grade for the report.
-        grade_norm_func (Callable[[float], float]): The function to use to normalize the grade.
-        args (tuple): Additional positional arguments.
-        kwargs (dict): Additional keyword arguments.
+    :ivar dict data: The data stored in the report.
+    :ivar str report_filepath: The filepath to save or load the report.
+    :ivar float grade_min: The minimum grade for the report.
+    :ivar float grade_min_value: The value of the report when the grade is the minimum.
+    :ivar float grade_max: The maximum grade for the report.
+    :ivar Callable[[float], float] grade_norm_func: The function to use to normalize the grade.
+    :ivar tuple args: Additional positional arguments.
+    :ivar dict kwargs: Additional keyword arguments.
     """
 
     VALUE_KEY = "value"
@@ -38,15 +37,14 @@ class Report:
         """
         Initialize a Report instance.
 
-        Args:
-            data (Optional[dict]): The data to store in the report.
-            report_filepath (Optional[str]): The filepath to save or load the report.
-            *args: Additional positional arguments.
-            **kwargs: Additional keyword arguments.
-                grade_min (float, optional): The minimum grade for the report.
-                grade_min_value (float, optional): The value of the report when the grade is the minimum.
-                grade_max (float, optional): The maximum grade for the report.
-                grade_norm_func (Callable[[float], float], optional): The function to use to normalize the grade.
+        :param dict data: The data to store in the report.
+        :param str report_filepath: The filepath to save or load the report.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional keyword arguments.
+            - grade_min (float, optional): The minimum grade for the report.
+            - grade_min_value (float, optional): The value of the report when the grade is the minimum.
+            - grade_max (float, optional): The maximum grade for the report.
+            - grade_norm_func (Callable[[float], float], optional): The function to use to normalize the grade.
         """
         self.data = data
         self.report_filepath = report_filepath
@@ -64,8 +62,7 @@ class Report:
         """
         Compute and return the weighted grade for the report.
 
-        Returns:
-            float: The computed grade.
+        :return float: The computed grade.
         """
         return self.get_grade()
 
@@ -74,8 +71,7 @@ class Report:
         """
         Check if the sum of weights is (approximately) 1.0.
 
-        Returns:
-            bool: True if weights sum to 1.0, False otherwise.
+        :return bool: True if weights sum to 1.0, False otherwise.
         """
         return np.isclose(sum([self.get_weight(k) for k in self.keys()]), 1.0)
 
@@ -90,8 +86,7 @@ class Report:
         """
         Get the current state of the report as a dictionary.
 
-        Returns:
-            dict: The state of the report.
+        :return dict: The state of the report.
         """
         return {
             "grade": self.grade,
@@ -105,8 +100,7 @@ class Report:
         """
         Set the state of the report from a dictionary.
 
-        Args:
-            state (dict): The state to set.
+        :param dict state: The state to set.
         """
         self.data = state["data"]
         self.report_filepath = state["report_filepath"]
@@ -117,10 +111,9 @@ class Report:
         """
         Add a key-value pair with a weight to the report.
 
-        Args:
-            key: The key to add.
-            value: The value to associate with the key.
-            weight (float, optional): The weight for the value. Defaults to 1.0.
+        :param key: The key to add.
+        :param value: The value to associate with the key.
+        :param float weight: The weight for the value. Defaults to 1.0.
         """
         self.data[key] = {self.VALUE_KEY: value, self.WEIGHT_KEY: weight}
 
@@ -128,12 +121,9 @@ class Report:
         """
         Get the value dictionary for a key.
 
-        Args:
-            key: The key to retrieve.
-            default: The default value if key is not found.
-
-        Returns:
-            dict or default: The value dictionary or default.
+        :param key: The key to retrieve.
+        :param default: The default value if key is not found.
+        :return: dict or default. The value dictionary or default.
         """
         return self.data.get(key, default)
 
@@ -141,12 +131,9 @@ class Report:
         """
         Get the value associated with a key.
 
-        Args:
-            key: The key to retrieve.
-            default: The default value if key is not found.
-
-        Returns:
-            value or default: The value or default.
+        :param key: The key to retrieve.
+        :param default: The default value if key is not found.
+        :return: value or default. The value or default.
         """
         value = self.get(key, default)
         if value is None:
@@ -157,12 +144,9 @@ class Report:
         """
         Get the weight associated with a key.
 
-        Args:
-            key: The key to retrieve.
-            default: The default value if key is not found.
-
-        Returns:
-            float or default: The weight or default.
+        :param key: The key to retrieve.
+        :param default: The default value if key is not found.
+        :return float or default: The weight or default.
         """
         value = self.get(key, default)
         if value is None:
@@ -173,12 +157,9 @@ class Report:
         """
         Get the weighted value for a key (value * weight).
 
-        Args:
-            key: The key to retrieve.
-            default: The default value if key is not found.
-
-        Returns:
-            float or None: The weighted value, or None if value or weight is missing.
+        :param key: The key to retrieve.
+        :param default: The default value if key is not found.
+        :return float or None: The weighted value, or None if value or weight is missing.
         """
         value = self.get_value(key, default)
         weight = self.get_weight(key, default)
@@ -190,12 +171,9 @@ class Report:
         """
         Get a tuple of (key, value dictionary).
 
-        Args:
-            key: The key to retrieve.
-            default: The default value if key is not found.
-
-        Returns:
-            tuple: (key, value dictionary)
+        :param key: The key to retrieve.
+        :param default: The default value if key is not found.
+        :return tuple: (key, value dictionary)
         """
         return key, self.get(key, default)
 
@@ -203,8 +181,7 @@ class Report:
         """
         Get all keys in the report data.
 
-        Returns:
-            KeysView: The keys of the data dictionary.
+        :return KeysView: The keys of the data dictionary.
         """
         return self.data.keys()
 
@@ -212,11 +189,8 @@ class Report:
         """
         Get the value dictionary for a key using indexing.
 
-        Args:
-            item: The key to retrieve.
-
-        Returns:
-            dict: The value dictionary.
+        :param item: The key to retrieve.
+        :return dict: The value dictionary.
         """
         return self.data[item]
 
@@ -224,10 +198,9 @@ class Report:
         """
         Set a key-value pair with a weight using indexing.
 
-        Args:
-            key: The key to set.
-            value: The value to associate with the key.
-            weight (float, optional): The weight for the value. Defaults to 1.0.
+        :param key: The key to set.
+        :param value: The value to associate with the key.
+        :param float weight: The weight for the value. Defaults to 1.0.
         """
         if isinstance(value, tuple):
             assert len(value) == 2, "value must be a tuple of length 2"
@@ -239,8 +212,7 @@ class Report:
         """
         Normalize the weights of all entries so that their sum is 1.0.
 
-        Returns:
-            Report: The current instance with normalized weights.
+        :return Report: The current instance with normalized weights.
         """
         total_weight = sum([self.get_weight(k) for k in self.keys()])
         for k in self.keys():
@@ -251,8 +223,7 @@ class Report:
         """
         Return a new Report instance with normalized weights.
 
-        Returns:
-            Report: A new Report with normalized weights.
+        :return Report: A new Report with normalized weights.
         """
         total_weight = sum([self.get_weight(k) for k in self.keys()])
         return Report(
@@ -269,8 +240,7 @@ class Report:
         """
         Compute the weighted grade for the report.
 
-        Returns:
-            float: The computed grade.
+        :return float: The computed grade.
         """
         if self.is_normalized:
             report = self
@@ -287,11 +257,8 @@ class Report:
         """
         Save the report state to a JSON file.
 
-        Args:
-            report_filepath (Optional[str], optional): The filepath to save to. If None, uses the instance's filepath.
-
-        Returns:
-            str: The filepath where the report was saved.
+        :param str report_filepath: The filepath to save to. If None, uses the instance's filepath.
+        :return str: The filepath where the report was saved.
         """
         if report_filepath is not None:
             self.report_filepath = report_filepath
@@ -304,11 +271,8 @@ class Report:
         """
         Load the report state from a JSON file.
 
-        Args:
-            report_filepath (Optional[str], optional): The filepath to load from. If None, uses the instance's filepath.
-
-        Returns:
-            Report: The current instance with loaded state.
+        :param str report_filepath: The filepath to load from. If None, uses the instance's filepath.
+        :return Report: The current instance with loaded state.
         """
         if report_filepath is not None:
             self.report_filepath = report_filepath
@@ -321,8 +285,7 @@ class Report:
         """
         Return a string representation of the Report.
 
-        Returns:
-            str: String representation.
+        :return str: String representation.
         """
         return (
             f"{self.__class__.__name__}("
@@ -336,8 +299,7 @@ class Report:
         """
         Return a JSON string representation of the Report.
 
-        Returns:
-            str: JSON string representation.
+        :return str: JSON string representation.
         """
         json_str = json.dumps(self.get_state(), indent=4)
         return f"{self.__class__.__name__}({json_str})"
@@ -346,8 +308,7 @@ class Report:
         """
         Return the number of items in the report data.
 
-        Returns:
-            int: Number of items.
+        :return int: Number of items.
         """
         return len(self.data)
 
@@ -355,8 +316,7 @@ class Report:
         """
         Return an iterator over the report data keys.
 
-        Returns:
-            Iterator: Iterator over keys.
+        :return Iterator: Iterator over keys.
         """
         return iter(self.data)
 
@@ -364,12 +324,7 @@ class Report:
         """
         Check if a key is in the report data.
 
-        Args:
-            item: The key to check.
-
-        Returns:
-            bool: True if key is in data, False otherwise.
+        :param item: The key to check.
+        :return bool: True if key is in data, False otherwise.
         """
         return item in self.data
-
-        return len(self.data)

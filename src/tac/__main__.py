@@ -15,8 +15,12 @@ def parse_args():
     """
     Parse command-line arguments for the TPAutoCorrect tool.
 
-    Returns:
-        argparse.Namespace: The parsed command-line arguments.
+    :returns: argparse.Namespace
+        The parsed command-line arguments.
+
+    :description:
+        Defines and parses all command-line options for configuring the auto-correction process,
+        including source paths, URLs, report settings, weights, and other options.
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -134,10 +138,12 @@ def main():
     """
     Main entry point for the TPAutoCorrect tool.
 
-    Parses arguments, sets up sources, runs the tester, handles report generation and optional git push.
+    :returns: str
+        The final grade as a formatted string.
 
-    Returns:
-        str: The final grade as a formatted string.
+    :description:
+        Parses arguments, sets up sources, runs the tester, handles report generation and optional git push.
+        Returns the final grade as a string.
     """
     args = parse_args()
     code_source = SourceCode(src_path=args.code_src_path, url=args.code_src_url)

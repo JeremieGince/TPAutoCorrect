@@ -6,20 +6,18 @@ class TestResult:
     """
     Represents the result of a test case, including its name, percentage value, and an optional message.
 
-    Attributes:
-        name (str): The name of the test.
-        percent_value (float): The percentage value representing the test result.
-        message (str): An optional message describing the result.
+    :ivar str name: The name of the test.
+    :ivar float percent_value: The percentage value representing the test result.
+    :ivar str message: An optional message describing the result.
     """
 
     def __init__(self, name: str, percent_value: float, message: str = ""):
         """
         Initialize a TestResult.
 
-        Args:
-            name (str): The name of the test.
-            percent_value (float): The percentage value of the test result.
-            message (str, optional): An optional message describing the result.
+        :param str name: The name of the test.
+        :param float percent_value: The percentage value of the test result.
+        :param str message: An optional message describing the result.
         """
         self.name = name
         self.percent_value = percent_value
@@ -29,8 +27,8 @@ class TestResult:
         """
         Return a string representation of the TestResult.
 
-        Returns:
-            str: String representation of the test result.
+        :return: String representation of the test result.
+        :rtype: str
         """
         _str = f"[{self.name}: {self.percent_value:.2f} %"
         if self.message:
@@ -43,21 +41,19 @@ class TestCase:
     """
     Abstract base class for a test case.
 
-    Subclasses should implement the run() method to execute the test and return a TestResult.
+    Subclasses should implement the :meth:`run` method to execute the test and return a :class:`TestResult`.
 
-    Methods:
-        run() -> TestResult: Execute the test and return the result.
+    :cvar run: Execute the test and return the result.
+    :vartype run: Callable[[], TestResult]
     """
 
     def run(self) -> TestResult:
         """
         Execute the test case.
 
-        Returns:
-            TestResult: The result of the test case.
-
-        Raises:
-            NotImplementedError: If the method is not implemented by a subclass.
+        :raises NotImplementedError: If the method is not implemented by a subclass.
+        :return: The result of the test case.
+        :rtype: TestResult
         """
         raise NotImplementedError
 
@@ -66,10 +62,9 @@ class PEP8TestCase(TestCase):
     """
     Test case for checking PEP8 compliance using pycodestyle.
 
-    Attributes:
-        MAX_LINE_LENGTH (int): The maximum allowed line length for PEP8 checks.
-        name (str): The name of the test case.
-        files_dir (str): The directory containing files to check.
+    :cvar int MAX_LINE_LENGTH: The maximum allowed line length for PEP8 checks.
+    :ivar str name: The name of the test case.
+    :ivar str files_dir: The directory containing files to check.
     """
 
     MAX_LINE_LENGTH = 120
@@ -78,9 +73,8 @@ class PEP8TestCase(TestCase):
         """
         Initialize a PEP8TestCase.
 
-        Args:
-            name (str): The name of the test case.
-            files_dir (str): The directory containing files to check for PEP8 compliance.
+        :param str name: The name of the test case.
+        :param str files_dir: The directory containing files to check for PEP8 compliance.
         """
         self.name = name
         self.files_dir = files_dir
@@ -89,8 +83,8 @@ class PEP8TestCase(TestCase):
         """
         Run the PEP8 compliance test using pycodestyle.
 
-        Returns:
-            TestResult: The result of the PEP8 compliance test.
+        :return: The result of the PEP8 compliance test.
+        :rtype: TestResult
         """
         pep8style = pycodestyle.StyleGuide(ignore="W191,E501", max_line_length=self.MAX_LINE_LENGTH, quiet=True)
         result = pep8style.check_files([self.files_dir])
