@@ -14,6 +14,24 @@ from .utils import find_filepath, rm_pyc_files, rm_pycache, rm_pytest_cache
 
 
 class Tester:
+    """
+    Tester class for running code and test evaluation, collecting metrics, and generating reports.
+
+    Handles code coverage, test pass rates, PEP8 compliance, and supports both student and master test sources.
+
+    :cvar str CODE_COVERAGE_KEY: Key for code coverage metric.
+    :cvar str PERCENT_PASSED_KEY: Key for percent passed metric.
+    :cvar str MASTER_PERCENT_PASSED_KEY: Key for master percent passed metric.
+    :cvar str PEP8_KEY: Key for PEP8 compliance metric.
+    :cvar dict DEFAULT_WEIGHTS: Default weights for metrics.
+    :cvar str MASTER_TESTS_RENAME_PATTERN: Pattern for renaming master test files.
+    :cvar str DOT_JSON_REPORT_NAME: Name for temporary JSON report file.
+    :cvar str MASTER_DOT_JSON_REPORT_NAME: Name for temporary master JSON report file.
+    :cvar str DEFAULT_REPORT_FILENAME: Default report filename.
+    :cvar float DEFAULT_PASSED_RATIO_ZERO_TESTS: Default ratio when there are zero tests.
+    :cvar Callable DEFAULT_LOGGING_FUNC: Default logging function.
+    """
+
     CODE_COVERAGE_KEY = "code_coverage"
     PERCENT_PASSED_KEY = "percent_passed"
     MASTER_PERCENT_PASSED_KEY = "master_percent_passed"
@@ -41,6 +59,21 @@ class Tester:
         report_kwargs: Optional[dict] = None,
         **kwargs,
     ):
+        """
+        Initialize the Tester.
+
+        :param code_src: The source code to test.
+        :type code_src: Optional[SourceCode]
+        :param tests_src: The test source.
+        :type tests_src: Optional[SourceTests]
+        :param master_code_src: Master code source for reference.
+        :type master_code_src: Optional[SourceCode], optional
+        :param master_tests_src: Master test source for reference.
+        :type master_tests_src: Optional[SourceTests], optional
+        :param report_kwargs: Additional arguments for the report.
+        :type report_kwargs: Optional[dict], optional
+        :param kwargs: Additional keyword arguments for configuration.
+        """
         if code_src is None:
             code_src = SourceCode()
         if tests_src is None:
@@ -67,26 +100,62 @@ class Tester:
 
     @property
     def dot_coverage_path(self):
+        """
+        Get the path to the temporary .coverage file.
+
+        :return: Path to the .coverage file, or None if not found.
+        :rtype: str or None
+        """
         return self._find_temp_filepath(".coverage")
 
     @property
     def coverage_json_path(self):
+        """
+        Get the path to the temporary coverage.json file.
+
+        :return: Path to the coverage.json file, or None if not found.
+        :rtype: str or None
+        """
         return self._find_temp_filepath("coverage.json")
 
     @property
     def coverage_xml_path(self):
+        """
+        Get the path to the temporary coverage.xml file.
+
+        :return: Path to the coverage.xml file, or None if not found.
+        :rtype: str or None
+        """
         return self._find_temp_filepath("coverage.xml")
 
     @property
     def dot_report_json_path(self):
+        """
+        Get the path to the temporary pytest JSON report file.
+
+        :return: Path to the .tmp_report.json file, or None if not found.
+        :rtype: str or None
+        """
         return self._find_temp_filepath(self.DOT_JSON_REPORT_NAME)
 
     @property
     def master_dot_report_json_path(self):
+        """
+        Get the path to the temporary master pytest JSON report file.
+
+        :return: Path to the .tmp_master_report.json file, or None if not found.
+        :rtype: str or None
+        """
         return self._find_temp_filepath(self.MASTER_DOT_JSON_REPORT_NAME)
 
     @property
     def temp_files(self):
+        """
+        List all temporary files used during testing.
+
+        :return: List of temporary file paths.
+        :rtype: List[str]
+        """
         tmp_files = [
             self.dot_coverage_path,
             self.coverage_json_path,
@@ -103,6 +172,19 @@ class Tester:
         json_report_file: Optional[str] = None,
         **kwargs,
     ):
+        """
+        Build the list of pytest command-line options for plugins.
+
+        :param add_cov: Whether to add coverage options. Defaults to True.
+        :type add_cov: bool, optional
+        :param add_json_report: Whether to add JSON report options. Defaults to True.
+        :type add_json_report: bool, optional
+        :param json_report_file: Name of the JSON report file.
+        :type json_report_file: Optional[str], optional
+        :param kwargs: Additional keyword arguments.
+        :return: List of pytest options.
+        :rtype: List[str]
+        """
         options = []
         if add_cov:
             options += [
@@ -122,6 +204,12 @@ class Tester:
 
     @property
     def all_sources(self):
+        """
+        Get all source objects (code, tests, master code, master tests).
+
+        :return: List of all non-None source objects.
+        :rtype: List[Source]
+        """
         sources = [
             self.code_src,
             self.tests_src,
@@ -132,15 +220,36 @@ class Tester:
 
     @property
     def is_setup(self):
+        """
+        Check if all sources are set up.
+
+        :return: True if all sources are set up, False otherwise.
+        :rtype: bool
+        """
         return all([s.is_setup for s in self.all_sources])
 
     def _find_temp_filepath(self, filename: str):
+        """
+        Find the path to a temporary file in the report directory or current working directory.
+
+        :param filename: The filename to search for.
+        :type filename: str
+        :return: The path to the file, or None if not found.
+        :rtype: str or None
+        """
         roots = [self.report_dir, os.getcwd()]
         found_files = [find_filepath(filename, root=root) for root in roots]
         found_files = [f for f in found_files if f is not None] + [None]
         return found_files[0]
 
     def setup_at(self, **kwargs):
+        """
+        Set up all sources at the report directory.
+
+        :param kwargs: Additional keyword arguments for setup.
+        :return: The current instance.
+        :rtype: Tester
+        """
         force = kwargs.pop("force_setup", False)
         debug = kwargs.get("debug", False)
         if self.is_setup and (not force):
@@ -159,6 +268,12 @@ class Tester:
         return self
 
     def run(self, *args, **kwargs):
+        """
+        Run the full test and evaluation pipeline.
+
+        :param args: Unused positional arguments.
+        :param kwargs: Additional keyword arguments for configuration.
+        """
         self.weights.update(kwargs.pop("weights", {}))
         save_report = kwargs.pop("save_report", True)
         clear_pytest_temporary_files = kwargs.pop("clear_pytest_temporary_files", False)
@@ -173,6 +288,11 @@ class Tester:
             self.clear_temporary_files()
 
     def _run(self, **kwargs):
+        """
+        Internal method to run pytest, collect metrics, and update the report.
+
+        :param kwargs: Additional keyword arguments.
+        """
         self.clear_pycache()
         self._run_pytest(**kwargs)
         self.report.add(
@@ -205,6 +325,11 @@ class Tester:
         self.clear_pycache()
 
     def _run_pytest(self, **kwargs):
+        """
+        Run pytest on the student's code and tests.
+
+        :param kwargs: Additional keyword arguments.
+        """
         options = self.get_pytest_plugins_options(
             add_cov=True,
             add_json_report=True,
@@ -220,6 +345,11 @@ class Tester:
         self.move_temp_files_to_report_dir(**kwargs)
 
     def _run_master_pytest(self, **kwargs):
+        """
+        Run pytest on the master code and master tests.
+
+        :param kwargs: Additional keyword arguments.
+        """
         if self.master_code_src is None:
             return
         if self.master_tests_src is None:
@@ -239,10 +369,10 @@ class Tester:
         self.move_temp_files_to_report_dir(**kwargs)
 
     def get_code_coverage(self) -> float:
-        r"""
-        Use pytest-cov to get code coverage of the code source using the tests source.
+        """
+        Compute the mean code coverage percentage using pytest-cov.
 
-        :return: code coverage
+        :return: Mean percent of code covered by tests.
         :rtype: float
         """
         try:
@@ -260,6 +390,14 @@ class Tester:
         return mean_percent_covered
 
     def get_test_cases_summary(self, dot_report_json_path: Optional[str] = None):
+        """
+        Parse the pytest JSON report and summarize test results.
+
+        :param dot_report_json_path: Path to the JSON report file.
+        :type dot_report_json_path: Optional[str], optional
+        :return: Summary of test results (passed, failed, total, ratios, percentages).
+        :rtype: dict
+        """
         dot_report_json_path = dot_report_json_path or self.dot_report_json_path
         json_plugin_report_data = json.load(open(dot_report_json_path))
         passed_tests = json_plugin_report_data["summary"].get("passed", 0)
@@ -284,6 +422,12 @@ class Tester:
         }
 
     def get_pep8_score(self):
+        """
+        Compute the average PEP8 compliance score for code and test sources.
+
+        :return: Average PEP8 compliance percentage.
+        :rtype: float
+        """
         src_test_case = PEP8TestCase(self.PEP8_KEY, self.code_src.local_path)
         src_test_case_result = src_test_case.run()
         tests_test_case = PEP8TestCase(self.PEP8_KEY, self.tests_src.local_path)
@@ -291,6 +435,13 @@ class Tester:
         return (src_test_case_result.percent_value + tests_test_case_result.percent_value) / 2.0
 
     def move_temp_files_to_report_dir(self, **kwargs):
+        """
+        Move temporary files to the report directory.
+
+        :param kwargs: Additional keyword arguments.
+        :return: The current instance.
+        :rtype: Tester
+        """
         for f in self.temp_files:
             try:
                 shutil.move(f, self.report_dir)
@@ -300,21 +451,39 @@ class Tester:
         return self
 
     def clear_pycache(self):
+        """
+        Remove __pycache__, .pytest_cache, and .pyc files from the report directory.
+        """
         rm_pycache(self.report_dir)
         rm_pytest_cache(self.report_dir)
         rm_pyc_files(self.report_dir)
 
     def clear_pytest_temporary_files(self):
+        """
+        Remove pytest temporary files and caches.
+        """
         self.clear_pycache()
         for f in self.temp_files:
             utils.rm_file(f)
 
     def clear_temporary_files(self):
+        """
+        Remove all temporary files and caches for all sources.
+        """
         self.clear_pytest_temporary_files()
         for src in self.all_sources:
             src.clear_temporary_files()
 
     def push_report_to(self, push_report_to: Optional[str] = "auto", **kwargs) -> "Tester":
+        """
+        Push the generated report to a remote git repository.
+
+        :param push_report_to: The remote URL or "auto" to detect. Defaults to "auto".
+        :type push_report_to: Optional[str], optional
+        :param kwargs: Additional keyword arguments.
+        :return: The current instance.
+        :rtype: Tester
+        """
         if push_report_to is None or push_report_to == "auto":
             push_report_to = self.kwargs.get("push_report_to", push_report_to)
         if push_report_to is None or push_report_to == "auto":
@@ -334,6 +503,12 @@ class Tester:
         return self
 
     def rm_report_dir(self):
+        """
+        Remove the report directory and its contents.
+
+        :return: The current instance.
+        :rtype: Tester
+        """
         rmtree_func = shutil.rmtree
         try:
             from git import rmtree as git_rmtree
