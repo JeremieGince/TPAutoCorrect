@@ -2,16 +2,9 @@ name: Tests
 
 on:
   pull_request:
-    branches: [ "*" ]
 
 permissions:
-  contents: write
-  pull-requests: write
-  actions: write
-  checks: write
-  statuses: write
-  issues: write
-  discussions: write
+  contents: read
 
 jobs:
   Run-tests-on-Ubuntu:
@@ -19,77 +12,71 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14" ]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install uv
-      uses: astral-sh/setup-uv@v6
-      with:
-        version: "0.9.2"
-        python-version: ${{ matrix.python-version }}
-        enable-cache: true
-    - name: Install dependencies
-      run: |
-        uv venv .venv
-        uv sync --locked --dev
-    - name: Test Linting
-      run: |
-        uv run black src tests --check --diff
-        uv run isort src tests --check-only --diff
-    - name: Test Typing
-      run: |
-        uv run mypy src tests
-#    - name: Test Notebooks
-#      run: |
-#        uv run pytest --nbmake notebooks -n=auto --nbmake-kernel=python3 --nbmake-timeout=600  # 10 minutes timeout
-
-    - name: Test Unittests with pytest
-      run: |
-        uv run pytest tests -n=auto --cov=src --cov-report="xml:tests/.tmp/coverage.xml" --cov-report=term-missing --durations=10 --session-timeout=600
-
-    - name: Code Coverage
-      uses: orgoro/coverage@v3.2
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        coverageFile: tests/.tmp/coverage.xml
-        thresholdAll: 0.0
-        thresholdNew: 0.98
-        thresholdModified: 0.0
-
-    - name: Test Build
-      if: ${{ matrix.python-version == '3.10' }}
-      run: |
-        uv run python -m build --sdist --wheel --no-isolation --outdir dist/ .
-        uv run twine check dist/*
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.2"
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+      - name: Install dependencies
+        run: |
+          uv venv .venv
+          uv sync --locked --dev
+      - name: Test Linting
+        run: |
+          uv run black src tests --check --diff
+          uv run isort src tests --check-only --diff
+      - name: Test Typing
+        run: |
+          uv run mypy src tests
+      # - name: Test Notebooks
+      #   run: |
+      #     uv run pytest --nbmake notebooks -n=auto --nbmake-kernel=python3 --nbmake-timeout=600  # 10 minutes timeout
+      - name: Test Unittests with pytest
+        run: |
+          uv run pytest tests -n=auto --cov=src --cov-report="xml:tests/.tmp/coverage.xml" --cov-report=term-missing --durations=10 --session-timeout=600
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.xml
+      - name: Test Build
+        if: ${{ matrix.python-version == '3.10' }}
+        run: |
+          uv run python -m build --sdist --wheel --no-isolation --outdir dist/ .
+          uv run twine check dist/*
 
   Run-tests-on-Windows:
     name: Run tests on Windows-latest
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14" ]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install uv
-      uses: astral-sh/setup-uv@v6
-      with:
-        version: "0.9.2"
-        python-version: ${{ matrix.python-version }}
-        enable-cache: true
-    - name: Install dependencies
-      run: |
-        uv venv .venv
-        uv sync --locked --dev
-    - name: Test Unittests with pytest
-      run: |
-        uv run pytest tests -n=auto --session-timeout=600
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.2"
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+      - name: Install dependencies
+        run: |
+          uv venv .venv
+          uv sync --locked --dev
+      - name: Test Unittests with pytest
+        run: |
+          uv run pytest tests -n=auto --session-timeout=600

@@ -15,7 +15,3 @@ class AClass:
 
     def mul(self):
         return mul(self.a, self.b)
-
-
-
-

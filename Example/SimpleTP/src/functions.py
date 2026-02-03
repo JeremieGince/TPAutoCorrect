@@ -1,5 +1,3 @@
-
-
 def add(a, b):
     return a + b
 
@@ -14,4 +12,3 @@ def mul(a, b):
 
 def bad_func():
     return False
-
