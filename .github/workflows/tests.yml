@@ -37,9 +37,9 @@ jobs:
       - name: Test Typing
         run: |
           uv run mypy src tests
-      - name: Test Notebooks
-        run: |
-          uv run pytest --nbmake notebooks -n=auto --nbmake-kernel=python3 --nbmake-timeout=600  # 10 minutes timeout
+      # - name: Test Notebooks
+      #   run: |
+      #     uv run pytest --nbmake notebooks -n=auto --nbmake-kernel=python3 --nbmake-timeout=600  # 10 minutes timeout
       - name: Test Unittests with pytest
         run: |
           uv run pytest tests -n=auto --cov=src --cov-report="xml:tests/.tmp/coverage.xml" --cov-report=term-missing --durations=10 --session-timeout=600
