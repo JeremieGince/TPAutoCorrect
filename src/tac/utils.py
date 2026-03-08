@@ -1027,7 +1027,9 @@ def get_report_pdf_from_dir(
 
                 if save_filepath is not None:
                     save_filepath = str(save_filepath)
-                    os.makedirs(os.path.dirname(save_filepath), exist_ok=True)
+                    parent = os.path.dirname(save_filepath)
+                    if parent:
+                        os.makedirs(parent, exist_ok=True)
                     shutil.copy2(pdf_path, save_filepath)
 
                 return pdf_path
