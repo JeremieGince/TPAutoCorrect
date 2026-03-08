@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: |
           uv venv .venv
-          uv sync --locked --dev
+          uv sync --dev
       - name: Test Linting
         run: |
           uv run black src tests --check --diff
