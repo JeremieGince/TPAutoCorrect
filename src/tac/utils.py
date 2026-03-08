@@ -24,9 +24,7 @@ def check_uv_available() -> bool:
     :rtype: bool
     """
     try:
-        result = subprocess.run(
-            ["uv", "--version"], capture_output=True, text=True, timeout=5
-        )
+        result = subprocess.run(["uv", "--version"], capture_output=True, text=True, timeout=5)
         return result.returncode == 0
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return False
@@ -60,9 +58,7 @@ def install_package(
             else:
                 cmd = ["uv", "pip", "install", package]
 
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=timeout, check=True
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, check=True)
             return result
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
             print(f"uv install failed: {e}. Falling back to pip...")
@@ -74,9 +70,7 @@ def install_package(
     else:
         cmd = [sys.executable, "-m", "pip", "install", package]
 
-    result = subprocess.run(
-        cmd, capture_output=True, text=True, timeout=timeout, check=True
-    )
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, check=True)
     return result
 
 
@@ -115,9 +109,7 @@ def install_from_pyproject(
             else:
                 cmd = ["uv", "pip", "install", "-e", project_dir]
 
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=timeout, check=True
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, check=True)
             return result
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
             print(f"uv install failed: {e}. Falling back to pip...")
@@ -129,9 +121,7 @@ def install_from_pyproject(
     else:
         cmd = [sys.executable, "-m", "pip", "install", "-e", project_dir]
 
-    result = subprocess.run(
-        cmd, capture_output=True, text=True, timeout=timeout, check=True
-    )
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, check=True)
     return result
 
 
@@ -175,9 +165,7 @@ def install_requirements(
             else:
                 cmd = ["uv", "pip", "install", "-r", requirements_path]
 
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=timeout, check=True
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, check=True)
             return result
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
             print(f"uv install failed: {e}. Falling back to pip...")
@@ -189,9 +177,7 @@ def install_requirements(
     else:
         cmd = [sys.executable, "-m", "pip", "install", "-r", requirements_path]
 
-    result = subprocess.run(
-        cmd, capture_output=True, text=True, timeout=timeout, check=True
-    )
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, check=True)
     return result
 
 
@@ -215,9 +201,7 @@ def _get_venv_python_path(venv_path: str) -> str:
     :return: Path to the Python executable.
     :rtype: str
     """
-    scripts_folder = VENV_SCRIPTS_FOLDER_BY_OS.get(sys.platform, "{}/bin").format(
-        venv_path
-    )
+    scripts_folder = VENV_SCRIPTS_FOLDER_BY_OS.get(sys.platform, "{}/bin").format(venv_path)
     exe = "python.exe" if sys.platform == "win32" else "python"
     return os.path.join(scripts_folder, exe)
 
@@ -339,9 +323,7 @@ def try_rm_trees(paths: Union[str, List[str]], ignore_errors: bool = True) -> No
         try_rmtree(path, ignore_errors=ignore_errors)
 
 
-def rm_direnames_from_root(
-    dirnames: Union[str, List[str]], root: Optional[str] = None
-) -> bool:
+def rm_direnames_from_root(dirnames: Union[str, List[str]], root: Optional[str] = None) -> bool:
     """
     Remove directories with specified names from the directory tree starting at root.
 
@@ -362,9 +344,7 @@ def rm_direnames_from_root(
     return True
 
 
-def rm_filetypes_from_root(
-    filetypes: Union[str, List[str]], root: Optional[str] = None
-) -> bool:
+def rm_filetypes_from_root(filetypes: Union[str, List[str]], root: Optional[str] = None) -> bool:
     """
     Remove files with specified extensions from the directory tree starting at root.
 
@@ -433,9 +413,7 @@ def rm_pytest_cache(root: Optional[str] = None) -> bool:
     return rm_direnames_from_root(".pytest_cache", root=root)
 
 
-def reindent_json_file(
-    filepath: str, indent: int = 4, dont_exist_ok: bool = True
-) -> Optional[str]:
+def reindent_json_file(filepath: str, indent: int = 4, dont_exist_ok: bool = True) -> Optional[str]:
     """
     Reformat a JSON file with the specified indentation.
 
@@ -619,9 +597,7 @@ class PathImport:
         self.added_sys_modules = []
         return self
 
-    def add_sibling_modules(
-        self, sibling_dirname: Optional[str] = None
-    ) -> "PathImport":
+    def add_sibling_modules(self, sibling_dirname: Optional[str] = None) -> "PathImport":
         """
         Import and add all sibling Python modules in the same directory to sys.modules.
 
@@ -668,9 +644,7 @@ class PathImport:
         :rtype: tuple
         """
         absolute_path = absolute_path or self.filepath
-        spec = importlib_util.spec_from_file_location(
-            self.get_module_name(absolute_path), absolute_path
-        )
+        spec = importlib_util.spec_from_file_location(self.get_module_name(absolute_path), absolute_path)
 
         if spec is None or spec.loader is None:
             raise ImportError(f"Cannot load module from {absolute_path}")
@@ -766,9 +740,7 @@ def push_file_to_git_repo(
     return True
 
 
-def get_git_repo_url(
-    working_dir: str, search_parent_directories: bool = True
-) -> Optional[str]:
+def get_git_repo_url(working_dir: str, search_parent_directories: bool = True) -> Optional[str]:
     """
     Get the remote URL of the git repository for a given working directory.
 
@@ -782,9 +754,7 @@ def get_git_repo_url(
     try:
         import git
 
-        repo = git.Repo(
-            working_dir, search_parent_directories=search_parent_directories
-        )
+        repo = git.Repo(working_dir, search_parent_directories=search_parent_directories)
         return repo.remotes.origin.url
     except Exception:
         return None
@@ -807,9 +777,7 @@ def get_git_repo_branch(
     try:
         import git
 
-        repo = git.Repo(
-            working_dir, search_parent_directories=search_parent_directories
-        )
+        repo = git.Repo(working_dir, search_parent_directories=search_parent_directories)
         return repo.active_branch.name
     except Exception:
         return None

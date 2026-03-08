@@ -16,10 +16,11 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, cast
 
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from matplotlib.axes import Axes
 import numpy as np
 import pythonbasictools as pbt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+
 from .grade import update_notes_yaml
 from .report import Report
 from .utils import format_name, get_report, get_report_with_pdf
@@ -128,18 +129,10 @@ class Homework:
 
         # Setup repository paths
         if self.template_url is not None:
-            self.template_repo_path = str(
-                self.cache_dir
-                / "template"
-                / self._repo_name_from_url(self.template_url)
-            )
+            self.template_repo_path = str(self.cache_dir / "template" / self._repo_name_from_url(self.template_url))
 
         if self.master_repo_url is not None:
-            self.master_repo_path = str(
-                self.cache_dir
-                / "master"
-                / self._repo_name_from_url(self.master_repo_url)
-            )
+            self.master_repo_path = str(self.cache_dir / "master" / self._repo_name_from_url(self.master_repo_url))
 
     # ------------------------------------------------------------------
     # Properties and formatting helpers
@@ -254,9 +247,7 @@ class Homework:
         if self.master_repo_url is None:
             return None
 
-        path = (
-            self.cache_dir / "master" / self._repo_name_from_url(self.master_repo_url)
-        )
+        path = self.cache_dir / "master" / self._repo_name_from_url(self.master_repo_url)
         path.parent.mkdir(parents=True, exist_ok=True)
 
         self._clone_or_update_repo(self.master_repo_url, path, update)
@@ -274,9 +265,7 @@ class Homework:
         :return: List of grades, with NaN for students without grades.
         :rtype: List[float]
         """
-        return [
-            report.get("grade", np.nan) for report in self.students_results.values()
-        ]
+        return [report.get("grade", np.nan) for report in self.students_results.values()]
 
     def get_stats_on_grades(self) -> Dict[str, float]:
         """
@@ -310,9 +299,7 @@ class Homework:
     # Base grade computation
     # ------------------------------------------------------------------
 
-    def get_base_grade(
-        self, force: bool = False
-    ) -> Tuple[float, float, Optional[dict]]:
+    def get_base_grade(self, force: bool = False) -> Tuple[float, float, Optional[dict]]:
         """
         Return the base grade computed from the template repository.
 
@@ -401,9 +388,7 @@ class Homework:
         classroom_id = classroom_id or self.classroom_id
 
         if classroom_id is None:
-            raise ValueError(
-                "classroom_id must be provided either in __init__ or as argument"
-            )
+            raise ValueError("classroom_id must be provided either in __init__ or as argument")
 
         parent = Path(students_repos_dir).resolve() / self.fmt_short_name
         parent.mkdir(parents=True, exist_ok=True)
@@ -432,9 +417,7 @@ class Homework:
         self.students_repos_dirpath = str(parent)
         self.students_repos_names = [p.name for p in parent.iterdir() if p.is_dir()]
 
-        self.logging_func(
-            f"Found {len(self.students_repos_names)} student repositories"
-        )
+        self.logging_func(f"Found {len(self.students_repos_names)} student repositories")
         return self.students_repos_dirpath
 
     # ------------------------------------------------------------------
@@ -472,9 +455,7 @@ class Homework:
         self.logging_func(f"Grading student: {student_repo_path.name}")
 
         # Setup temporary directory for this student
-        tmp_dir = (
-            Path("homeworks_corrected") / self.fmt_short_name / student_repo_path.name
-        )
+        tmp_dir = Path("homeworks_corrected") / self.fmt_short_name / student_repo_path.name
         tmp_dir.mkdir(parents=True, exist_ok=True)
 
         # Get student report
@@ -521,9 +502,7 @@ class Homework:
         try:
             update_notes_yaml(notes_path, final_report)
         except Exception as e:
-            self.logging_func(
-                f"Warning: could not update notes.yaml for {student_repo_path.name}: {e}"
-            )
+            self.logging_func(f"Warning: could not update notes.yaml for {student_repo_path.name}: {e}")
 
         # Clean up temporary files left by the grading run
         self._cleanup_tmp_dir(tmp_dir)
@@ -533,9 +512,7 @@ class Homework:
             with lock:
                 self.to_json(str(save_filepath))
 
-        self.logging_func(
-            f"Completed grading {student_repo_path.name}: {final_report.grade:.2f}/100"
-        )
+        self.logging_func(f"Completed grading {student_repo_path.name}: {final_report.grade:.2f}/100")
 
         return final_report
 
@@ -596,9 +573,7 @@ class Homework:
         self.logging_func(f"Starting auto-grading for {self.name}")
 
         # Get base grade
-        base_grade, grade_floor, reference_report_state = self.get_base_grade(
-            force=force_base_grade
-        )
+        base_grade, grade_floor, reference_report_state = self.get_base_grade(force=force_base_grade)
         self.logging_func(f"Base grade: {base_grade:.2f}/100")
 
         # Clone student repositories
@@ -802,9 +777,7 @@ class Homework:
                     linewidth=2,
                 )
 
-        ax.set_title(
-            f"{self.name} – Grade Distribution", fontsize=14, fontweight="bold"
-        )
+        ax.set_title(f"{self.name} – Grade Distribution", fontsize=14, fontweight="bold")
         ax.set_xlabel("Grade [%]", fontsize=12)
         ax.set_ylabel("Number of Students", fontsize=12)
         ax.legend(fontsize=10)

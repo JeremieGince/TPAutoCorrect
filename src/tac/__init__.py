@@ -39,7 +39,7 @@ __url__ = "https://github.com/JeremieGince/TPAutoCorrect"
 __package__ = "tac"
 
 try:
-    from importlib.metadata import version, PackageNotFoundError
+    from importlib.metadata import PackageNotFoundError, version
 
     __version__ = version(__package__)
 except Exception:
@@ -49,6 +49,8 @@ import warnings
 
 # Import core modules
 from . import utils as tac_utils
+from .grade import make_notes_template, update_notes_yaml
+from .homework import Homework
 from .report import Report
 from .source import (
     Source,
@@ -60,9 +62,7 @@ from .source import (
     SourceTests,
 )
 from .tester import Tester
-from .grade import make_notes_template, update_notes_yaml
 from .utils import get_report, get_report_with_pdf
-from .homework import Homework
 
 # Suppress warnings from dependencies
 warnings.filterwarnings("ignore", category=Warning, module="docutils")

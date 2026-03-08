@@ -153,22 +153,16 @@ class Tester:
         self.hidden_test_cases_summary: Optional[dict] = None
 
         # Setup report directory and filepath
-        _report_dir: Optional[str] = (
-            str(self.kwargs["report_dir"]) if "report_dir" in self.kwargs else None
-        )
+        _report_dir: Optional[str] = str(self.kwargs["report_dir"]) if "report_dir" in self.kwargs else None
         self.report_dir: str = _report_dir or os.path.join(os.getcwd(), "report_dir")
         # Always store as an absolute path so that venv executables built from
         # report_dir remain valid when subprocess changes its cwd to report_dir.
         self.report_dir = str(Path(self.report_dir).resolve())
 
         _report_filepath: Optional[str] = (
-            str(self.kwargs["report_filepath"])
-            if "report_filepath" in self.kwargs
-            else None
+            str(self.kwargs["report_filepath"]) if "report_filepath" in self.kwargs else None
         )
-        self.report_filepath: str = _report_filepath or os.path.join(
-            self.report_dir, self.DEFAULT_REPORT_FILENAME
-        )
+        self.report_filepath: str = _report_filepath or os.path.join(self.report_dir, self.DEFAULT_REPORT_FILENAME)
 
         # Initialize report
         report_kwargs = report_kwargs or {}
@@ -304,9 +298,7 @@ class Tester:
         else:
             _supp_path = None
             try:
-                _supp_path = (
-                    self.supp_tests_src.src_path if self.supp_tests_src else None
-                )
+                _supp_path = self.supp_tests_src.src_path if self.supp_tests_src else None
             except (ValueError, Exception):
                 pass
             # Set working_dir so that local_path returns a (non-existent) path
@@ -327,9 +319,7 @@ class Tester:
         if self.base_tests_src is not None:
             _base_available = False
             try:
-                _base_available = (
-                    self.base_tests_src.is_local or self.base_tests_src.is_remote
-                )
+                _base_available = self.base_tests_src.is_local or self.base_tests_src.is_remote
             except (ValueError, Exception):
                 pass
 
@@ -367,9 +357,7 @@ class Tester:
         if self.hidden_tests_src is not None:
             _hidden_available = False
             try:
-                _hidden_available = (
-                    self.hidden_tests_src.is_local or self.hidden_tests_src.is_remote
-                )
+                _hidden_available = self.hidden_tests_src.is_local or self.hidden_tests_src.is_remote
             except (ValueError, Exception):
                 pass
 
@@ -467,9 +455,7 @@ class Tester:
         supp_ran = False
         if supp_dir and os.path.isdir(supp_dir):
             self._run_supp_pytest(append_cov=False, **kwargs)
-            self.supp_test_cases_summary = deepcopy(
-                self.get_test_cases_summary(self.supp_report_json_path)
-            )
+            self.supp_test_cases_summary = deepcopy(self.get_test_cases_summary(self.supp_report_json_path))
             self.report.add(
                 self.SUPP_TESTS_KEY,
                 self.supp_test_cases_summary["percent_passed"],
@@ -497,9 +483,7 @@ class Tester:
                 append_cov=supp_ran,
                 **kwargs,
             )
-            self.base_test_cases_summary = deepcopy(
-                self.get_test_cases_summary(self.base_report_json_path)
-            )
+            self.base_test_cases_summary = deepcopy(self.get_test_cases_summary(self.base_report_json_path))
             self.report.add(
                 self.BASE_TESTS_KEY,
                 self.base_test_cases_summary["percent_passed"],
@@ -548,9 +532,7 @@ class Tester:
         # --- hidden_tests (no coverage) ---
         hidden_dir = self.hidden_tests_src.local_path if self.hidden_tests_src else None
         if hidden_dir and os.path.isdir(hidden_dir):
-            assert (
-                self.hidden_tests_src is not None
-            )  # guaranteed by hidden_dir being set
+            assert self.hidden_tests_src is not None  # guaranteed by hidden_dir being set
             _hidden_local: str = self.hidden_tests_src.local_path or hidden_dir
             self._run_master_suite_pytest(
                 suite_dirname=os.path.relpath(_hidden_local, self.report_dir),
@@ -559,9 +541,7 @@ class Tester:
                 test_type="Hidden Tests",
                 **kwargs,
             )
-            self.hidden_test_cases_summary = deepcopy(
-                self.get_test_cases_summary(self.hidden_report_json_path)
-            )
+            self.hidden_test_cases_summary = deepcopy(self.get_test_cases_summary(self.hidden_report_json_path))
             self.report.add(
                 self.HIDDEN_TESTS_KEY,
                 self.hidden_test_cases_summary["percent_passed"],
@@ -635,9 +615,7 @@ class Tester:
 
             if debug:
                 status = "✓" if result.returncode == 0 else "✗"
-                self.logging_func(
-                    f"{status} {test_type} completed (exit code: {result.returncode})"
-                )
+                self.logging_func(f"{status} {test_type} completed (exit code: {result.returncode})")
                 if result.returncode != 0:
                     self.logging_func(f"  Details saved to: {output_path}")
 
@@ -664,9 +642,7 @@ class Tester:
             # Return a synthetic failed result so callers can continue grading.
             # The JSON report file will be absent, causing get_test_cases_summary
             # to return the empty summary (0% passed).
-            return subprocess.CompletedProcess(
-                args=cmd, returncode=-1, stdout="", stderr=error_msg
-            )
+            return subprocess.CompletedProcess(args=cmd, returncode=-1, stdout="", stderr=error_msg)
 
         except Exception as e:
             error_msg = f"Failed to execute {test_type}: {e}"
@@ -788,9 +764,7 @@ class Tester:
                 coverage_data: Dict = json.load(f)
 
         except Exception as err:
-            warnings.warn(
-                f"Could not load coverage data from {self.coverage_json_path}: {err}"
-            )
+            warnings.warn(f"Could not load coverage data from {self.coverage_json_path}: {err}")
             return 0.0
 
         if not self.code_src.local_path:
@@ -809,9 +783,7 @@ class Tester:
             warnings.warn("No coverage data found for source files")
             return 0.0
 
-        mean_percent_covered = sum(s["percent_covered"] for s in summaries) / len(
-            summaries
-        )
+        mean_percent_covered = sum(s["percent_covered"] for s in summaries) / len(summaries)
         return mean_percent_covered
 
     def get_test_cases_summary(
@@ -833,9 +805,7 @@ class Tester:
             with open(report_json_path, "r", encoding="utf-8") as f:
                 json_plugin_report_data = json.load(f)
         except Exception as err:
-            warnings.warn(
-                f"Could not load pytest report from {report_json_path}: {err}"
-            )
+            warnings.warn(f"Could not load pytest report from {report_json_path}: {err}")
             return self._get_empty_summary()
 
         summary = json_plugin_report_data.get("summary", {})
@@ -863,8 +833,7 @@ class Tester:
         else:
             # Truly empty suite (no tests discovered at all) — not an error.
             warnings.warn(
-                f"No tests found in {report_json_path!r}. "
-                f"Assigning a perfect grade (100%) for this suite.",
+                f"No tests found in {report_json_path!r}. " f"Assigning a perfect grade (100%) for this suite.",
                 RuntimeWarning,
             )
             ratio_passed = 1.0
@@ -906,9 +875,7 @@ class Tester:
         src_test_case = PEP8TestCase(self.PEP8_KEY, _src_lp)
         src_result = src_test_case.run()
 
-        supp_local = (
-            self.supp_tests_src.local_path if self.supp_tests_src is not None else None
-        )
+        supp_local = self.supp_tests_src.local_path if self.supp_tests_src is not None else None
         # Fall back to code_src if supp_tests is not available
         if not supp_local or not os.path.isdir(supp_local):
             supp_local = self.code_src.local_path
@@ -961,15 +928,12 @@ class Tester:
             push_report_to = self.kwargs.get("push_report_to", push_report_to)
 
         if push_report_to is None or push_report_to == "auto":
-            self.logging_func(
-                f"Auto-detecting git repo URL from {self.code_src.working_dir}"
-            )
+            self.logging_func(f"Auto-detecting git repo URL from {self.code_src.working_dir}")
             push_report_to = utils.get_git_repo_url(self.code_src.working_dir or "")
 
         if push_report_to is None:
             warnings.warn(
-                f"Could not detect git repo URL from {self.code_src.working_dir}. "
-                f"Report will not be pushed.",
+                f"Could not detect git repo URL from {self.code_src.working_dir}. " f"Report will not be pushed.",
                 RuntimeWarning,
             )
             return self

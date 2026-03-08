@@ -131,9 +131,7 @@ def _render_schema(schema: List[SchemaEntry]) -> str:
             for item in cat["items"]:
                 lines.append(f"      - name: {item['name']}")
                 lines.append(f"        score: null")
-                lines.append(
-                    f"        max_points: {_fmt_points(item.get('max_points'))}"
-                )
+                lines.append(f"        max_points: {_fmt_points(item.get('max_points'))}")
         lines.append("")  # blank line between categories
     return "\n".join(lines)
 
@@ -226,19 +224,13 @@ def _update_item_field(
     :raises ValueError: If the item or field is not found.
     """
     pattern = re.compile(
-        r"(- name: "
-        + re.escape(item_name)
-        + r"\n(?:\s+\S.*\n)*?\s+"
-        + re.escape(field)
-        + r": )(null|\S+)",
+        r"(- name: " + re.escape(item_name) + r"\n(?:\s+\S.*\n)*?\s+" + re.escape(field) + r": )(null|\S+)",
         re.MULTILINE,
     )
     replacement = r"\g<1>" + ("null" if new_value is None else str(new_value))
     new_text, count = re.subn(pattern, replacement, yaml_text)
     if count == 0:
-        raise ValueError(
-            f"Field '{field}' of item '{item_name}' not found in notes.yaml"
-        )
+        raise ValueError(f"Field '{field}' of item '{item_name}' not found in notes.yaml")
     return new_text
 
 
@@ -332,11 +324,7 @@ def update_notes_yaml(
         weight = entry["weight"]
         # Keep null for zero-weight (ungraded) metrics
         score = None if weight == 0.0 else _round_score(value, weight)
-        max_pts = (
-            None
-            if weight == 0.0
-            else (int(weight) if weight == int(weight) else weight)
-        )
+        max_pts = None if weight == 0.0 else (int(weight) if weight == int(weight) else weight)
         try:
             yaml_text = _update_item_field(yaml_text, item_name, "score", score)
             yaml_text = _update_item_field(yaml_text, item_name, "max_points", max_pts)

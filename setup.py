@@ -4,11 +4,7 @@ import setuptools
 from setuptools import setup
 
 _here = Path(__file__).parent
-_long_description = (
-    (_here / "README.md").read_text(encoding="utf-8")
-    if (_here / "README.md").exists()
-    else ""
-)
+_long_description = (_here / "README.md").read_text(encoding="utf-8") if (_here / "README.md").exists() else ""
 
 setup(
     name="TAC",

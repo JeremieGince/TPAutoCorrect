@@ -3,7 +3,7 @@ Supplementary tests for SimpleTP - student-written tests for their own code.
 These are run with coverage to measure how well students test their code.
 """
 
-from functions import add, sub, mul
+from functions import add, mul, sub
 
 
 def test_add():

@@ -64,9 +64,7 @@ class Report:
         self.score_min: float = kwargs.pop("score_min", self.DEFAULT_SCORE_MIN)
         self.grade_floor: float = kwargs.pop("grade_floor", self.DEFAULT_GRADE_FLOOR)
         self.score_max: float = kwargs.pop("score_max", self.DEFAULT_SCORE_MAX)
-        self.grade_norm_func: Optional[Callable[[float], float]] = kwargs.pop(
-            "grade_norm_func", None
-        )
+        self.grade_norm_func: Optional[Callable[[float], float]] = kwargs.pop("grade_norm_func", None)
 
     @property
     def grade(self) -> float:
@@ -86,10 +84,7 @@ class Report:
         :return: True if weights sum to 1.0 (within numerical tolerance), False otherwise.
         :rtype: bool
         """
-        total_weight: float = sum(
-            (self.get_weight(k) or 0.0)
-            for k in self.keys()  # type: ignore[misc]
-        )
+        total_weight: float = sum((self.get_weight(k) or 0.0) for k in self.keys())  # type: ignore[misc]
         return bool(np.isclose(total_weight, 1.0))
 
     def get_state(self) -> Dict[str, Any]:
@@ -213,9 +208,7 @@ class Report:
 
         return value * weight
 
-    def get_item(
-        self, key: str, default: Any = None
-    ) -> Tuple[str, Optional[Dict[str, float]]]:
+    def get_item(self, key: str, default: Any = None) -> Tuple[str, Optional[Dict[str, float]]]:
         """
         Get a tuple of (key, value dictionary).
 
@@ -274,10 +267,7 @@ class Report:
         :return: The current instance with normalized weights.
         :rtype: Report
         """
-        total_weight: float = sum(
-            (self.get_weight(k) or 0.0)
-            for k in self.keys()  # type: ignore[misc]
-        )
+        total_weight: float = sum((self.get_weight(k) or 0.0) for k in self.keys())  # type: ignore[misc]
 
         if total_weight == 0:
             raise ValueError("Cannot normalize when total weight is zero")
@@ -296,10 +286,7 @@ class Report:
         :rtype: Report
         :raises ValueError: If total weight is zero.
         """
-        total_weight: float = sum(
-            (self.get_weight(k) or 0.0)
-            for k in self.keys()  # type: ignore[misc]
-        )
+        total_weight: float = sum((self.get_weight(k) or 0.0) for k in self.keys())  # type: ignore[misc]
 
         if total_weight == 0:
             raise ValueError("Cannot normalize when total weight is zero")
@@ -353,9 +340,7 @@ class Report:
             report = self.get_normalized()
 
         # Compute weighted sum (values are expected to be in 0-100 range)
-        weighted: List[float] = [
-            w for k in report.keys() for w in (report.get_weighted(k),) if w is not None
-        ]
+        weighted: List[float] = [w for k in report.keys() for w in (report.get_weighted(k),) if w is not None]
         weighted_sum = sum(weighted)
 
         # Clamp to grade_floor

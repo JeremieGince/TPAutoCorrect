@@ -2,7 +2,7 @@
 Base tests for SimpleTP - run by the auto-corrector against student code.
 """
 
-from functions import add, sub, mul, bad_func
+from functions import add, bad_func, mul, sub
 
 
 def test_add_positive():

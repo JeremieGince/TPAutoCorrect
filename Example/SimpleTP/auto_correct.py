@@ -37,9 +37,7 @@ def auto_correct():
     print(code_source)
     supp_tests_source = tac.SourceSuppTests(logging_func=print)
     print(supp_tests_source)
-    base_tests_source = tac.SourceBaseTests(
-        os.path.join(os.path.dirname(__file__), "base_tests"), logging_func=print
-    )
+    base_tests_source = tac.SourceBaseTests(os.path.join(os.path.dirname(__file__), "base_tests"), logging_func=print)
     print(base_tests_source)
     auto_corrector = tac.Tester(
         code_source,
