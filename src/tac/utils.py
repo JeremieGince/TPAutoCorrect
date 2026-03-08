@@ -790,6 +790,31 @@ def get_git_repo_url(
         return None
 
 
+def get_git_repo_branch(
+    working_dir: str,
+    search_parent_directories: bool = True,
+) -> Optional[str]:
+    """
+    Get the currently active branch of the git repository at the given path.
+
+    :param working_dir: The directory to search for a git repository.
+    :type working_dir: str
+    :param search_parent_directories: Whether to search parent directories. Defaults to True.
+    :type search_parent_directories: bool
+    :return: The active branch name if found, otherwise None.
+    :rtype: Optional[str]
+    """
+    try:
+        import git
+
+        repo = git.Repo(
+            working_dir, search_parent_directories=search_parent_directories
+        )
+        return repo.active_branch.name
+    except Exception:
+        return None
+
+
 def format_name(name: str) -> str:
     """
     Format a name to be filesystem-safe.

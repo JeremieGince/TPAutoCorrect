@@ -287,8 +287,8 @@ class Tester:
 
         _supp_available = False
         try:
-            _supp_available = (
-                self.supp_tests_src is not None and self.supp_tests_src.is_local
+            _supp_available = self.supp_tests_src is not None and (
+                self.supp_tests_src.is_local or self.supp_tests_src.is_remote
             )
         except (ValueError, Exception):
             pass
