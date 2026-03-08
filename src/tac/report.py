@@ -46,16 +46,18 @@ class Report:
             - grade_max (float, optional): The maximum grade for the report.
             - grade_norm_func (Callable[[float], float], optional): The function to use to normalize the grade.
         """
-        self.data = data
+        self.data: dict = data if data is not None else {}
         self.report_filepath = report_filepath
         self.grade_min = kwargs.pop("grade_min", self.DEFAULT_GRADE_MIN)
-        self.grade_min_value = kwargs.pop("grade_min_value", self.DEFAULT_GRADE_MIN_VALUE)
+        self.grade_min_value = kwargs.pop(
+            "grade_min_value", self.DEFAULT_GRADE_MIN_VALUE
+        )
         self.grade_max = kwargs.pop("grade_max", self.DEFAULT_GRADE_MAX)
-        self.grade_norm_func: Optional[Callable[[float], float]] = kwargs.pop("grade_norm_func", None)
+        self.grade_norm_func: Optional[Callable[[float], float]] = kwargs.pop(
+            "grade_norm_func", None
+        )
         self.args = args
         self.kwargs = kwargs
-
-        self._initialize_data_()
 
     @property
     def grade(self) -> float:
@@ -74,13 +76,6 @@ class Report:
         :return bool: True if weights sum to 1.0, False otherwise.
         """
         return np.isclose(sum([self.get_weight(k) for k in self.keys()]), 1.0)
-
-    def _initialize_data_(self):
-        """
-        Initialize the data dictionary if it is None.
-        """
-        if self.data is None:
-            self.data = {}
 
     def get_state(self) -> dict:
         """
@@ -135,10 +130,10 @@ class Report:
         :param default: The default value if key is not found.
         :return: value or default. The value or default.
         """
-        value = self.get(key, default)
-        if value is None:
-            return value
-        return value[self.VALUE_KEY]
+        entry = self.get(key)
+        if entry is None:
+            return default
+        return entry[self.VALUE_KEY]
 
     def get_weight(self, key, default=None):
         """
@@ -148,10 +143,10 @@ class Report:
         :param default: The default value if key is not found.
         :return float or default: The weight or default.
         """
-        value = self.get(key, default)
-        if value is None:
-            return value
-        return value[self.WEIGHT_KEY]
+        entry = self.get(key)
+        if entry is None:
+            return default
+        return entry[self.WEIGHT_KEY]
 
     def get_weighted(self, key, default=None):
         """
@@ -194,19 +189,21 @@ class Report:
         """
         return self.data[item]
 
-    def __setitem__(self, key, value, weight=1.0):
+    def __setitem__(self, key, value):
         """
-        Set a key-value pair with a weight using indexing.
+        Set a key-value pair using indexing.
+
+        Accepts either a tuple (value, weight) or just a value (weight defaults to 1.0).
 
         :param key: The key to set.
-        :param value: The value to associate with the key.
-        :param float weight: The weight for the value. Defaults to 1.0.
+        :param value: Either a tuple (value, weight) or just the value.
         """
         if isinstance(value, tuple):
-            assert len(value) == 2, "value must be a tuple of length 2"
-            self.data[key] = value
+            if len(value) != 2:
+                raise ValueError("value tuple must be (value, weight)")
+            self.data[key] = {self.VALUE_KEY: value[0], self.WEIGHT_KEY: value[1]}
         else:
-            self.data[key] = (value, weight)
+            self.add(key, value, weight=1.0)
 
     def normalize_weights_(self) -> "Report":
         """
@@ -248,7 +245,9 @@ class Report:
             report = self.get_normalized()
         grade = sum([report.get_weighted(k) for k in report.keys()])
         grade_scale = self.grade_max - self.grade_min
-        grade = (self.grade_max - self.grade_min_value) * (grade - self.grade_min) / grade_scale + self.grade_min_value
+        grade = (self.grade_max - self.grade_min_value) * (
+            grade - self.grade_min
+        ) / grade_scale + self.grade_min_value
         if self.grade_norm_func is not None:
             grade = self.grade_norm_func(grade)
         return grade
@@ -262,7 +261,9 @@ class Report:
         """
         if report_filepath is not None:
             self.report_filepath = report_filepath
-        assert self.report_filepath is not None, "report_filepath must be initialized before saving"
+        assert self.report_filepath is not None, (
+            "report_filepath must be initialized before saving"
+        )
         with open(self.report_filepath, "w") as f:
             json.dump(self.get_state(), f, indent=4)
         return self.report_filepath
@@ -276,7 +277,9 @@ class Report:
         """
         if report_filepath is not None:
             self.report_filepath = report_filepath
-        assert self.report_filepath is not None, "report_filepath must be initialized before loading"
+        assert self.report_filepath is not None, (
+            "report_filepath must be initialized before loading"
+        )
         with open(self.report_filepath, "r") as f:
             self.set_state(json.load(f))
         return self
