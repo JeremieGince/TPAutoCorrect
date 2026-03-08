@@ -210,8 +210,11 @@ class Report:
         Normalize the weights of all entries so that their sum is 1.0.
 
         :return Report: The current instance with normalized weights.
+        :raises ValueError: If total weight is zero.
         """
         total_weight = sum([self.get_weight(k) for k in self.keys()])
+        if total_weight == 0:
+            raise ValueError("Cannot normalize when total weight is zero")
         for k in self.keys():
             self.data[k][self.WEIGHT_KEY] = self.get_weight(k) / total_weight  # type: ignore
         return self
@@ -221,8 +224,11 @@ class Report:
         Return a new Report instance with normalized weights.
 
         :return Report: A new Report with normalized weights.
+        :raises ValueError: If total weight is zero.
         """
         total_weight = sum([self.get_weight(k) for k in self.keys()])
+        if total_weight == 0:
+            raise ValueError("Cannot normalize when total weight is zero")
         return Report(
             {
                 k: {
@@ -243,7 +249,10 @@ class Report:
             report = self
         else:
             report = self.get_normalized()
-        grade = sum([report.get_weighted(k) for k in report.keys()])
+        weighted = [
+            w for k in report.keys() for w in (report.get_weighted(k),) if w is not None
+        ]
+        grade = sum(weighted)
         grade_scale = self.grade_max - self.grade_min
         grade = (self.grade_max - self.grade_min_value) * (
             grade - self.grade_min
