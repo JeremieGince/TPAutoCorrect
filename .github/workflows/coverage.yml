@@ -28,8 +28,7 @@ jobs:
         with:
           name: coverage
           run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
 
       - name: Verify coverage file
         run: test -f coverage.xml || test -f tests/.tmp/coverage.xml
