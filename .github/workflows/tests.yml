@@ -76,7 +76,7 @@ jobs:
       - name: Install dependencies
         run: |
           uv venv .venv
-          uv sync --locked --dev
+          uv sync --dev
       - name: Test Unittests with pytest
         run: |
           uv run pytest tests -n=auto --session-timeout=600
