@@ -299,3 +299,4 @@ report_dir
 report_dir_default
 report_dir_git
 
+uv.lock
