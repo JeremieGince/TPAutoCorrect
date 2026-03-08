@@ -62,20 +62,26 @@ def auto_correct_from_git():
         runs the tests, and prints the report.
     """
     path_to_example = os.path.join(".", "Example", "SimpleTP")
-    repo_url = tac.__url__
+    repo_url = tac.tac_utils.get_git_repo_url(os.path.dirname(__file__))
+    repo_branch = tac.tac_utils.get_git_repo_branch(os.path.dirname(__file__))
     code_source = tac.SourceCode(
-        os.path.join(path_to_example, "src"), repo_url=repo_url, logging_func=print
+        os.path.join(path_to_example, "src"),
+        repo_url=repo_url,
+        repo_branch=repo_branch,
+        logging_func=print,
     )
     print(code_source)
     supp_tests_source = tac.SourceSuppTests(
         os.path.join(path_to_example, "supp_tests"),
         repo_url=repo_url,
+        repo_branch=repo_branch,
         logging_func=print,
     )
     print(supp_tests_source)
     base_tests_source = tac.SourceBaseTests(
         os.path.join(path_to_example, "base_tests"),
         repo_url=repo_url,
+        repo_branch=repo_branch,
         logging_func=print,
     )
     print(base_tests_source)
