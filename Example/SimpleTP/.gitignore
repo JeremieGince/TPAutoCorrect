@@ -298,3 +298,6 @@ tests/tmp
 temp
 report_dir*
 *.json
+# Track the example test directories (exceptions to the rule above)
+!base_tests/
+!supp_tests/

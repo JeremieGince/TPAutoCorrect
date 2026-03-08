@@ -16,6 +16,7 @@ dynamic = ["readme"]
 requires-python = ">=3.9, <3.15"
 dependencies = [
   "gitpython>=3.1.46",
+  "matplotlib>=3.9.4",
   "numpy (>=1.23,<3.0.0)",
   "pycodestyle>=2.14.0",
   "pytest>=8.3.5,<10",
@@ -26,56 +27,47 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "black>=25.11.0",
-    "build>=1.4.0",
-    "isort>=6.1.0",
-    "mypy>=1.19.1",
-    "pytest-timeout>=2.4.0",
-    "pytest-xdist>=3.7.0,<4",
-    "setuptools>=80.9.0",
-    "twine>=6.2.0",
-    "wheel>=0.45.1",
+  "black>=25.11.0",
+  "build>=1.4.0",
+  "isort>=6.1.0",
+  "mypy>=1.19.1",
+  "pytest-timeout>=2.4.0",
+  "pytest-xdist>=3.7.0,<4",
+  "setuptools>=80.9.0",
+  "twine>=6.2.0",
+  "wheel>=0.45.1",
 ]
 
 [build-system]
-requires = [
-    "setuptools>=80.9.0",
-    "wheel>=0.45.1",
-    "twine>=6.2.0",
-]
+requires = ["setuptools>=80.9.0", "wheel>=0.45.1", "twine>=6.2.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
-readme = {file = "README.md", content-type = "text/markdown"}
+readme = { file = "README.md", content-type = "text/markdown" }
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.coverage.report]
 exclude_also = [
-    'def __repr__',
-    'if self.debug:',
-    'if settings.DEBUG',
-    'raise AssertionError',
-    'raise NotImplementedError',
-    'if __name__ == .__main__.:',
-    'if TYPE_CHECKING:',
-    '@(abc\.)?abstractmethod',
+  'def __repr__',
+  'if self.debug:',
+  'if settings.DEBUG',
+  'raise AssertionError',
+  'raise NotImplementedError',
+  'if __name__ == .__main__.:',
+  'if TYPE_CHECKING:',
+  '@(abc\.)?abstractmethod',
 ]
 
 [tool.pytest.ini_options]
-pythonpath = [
-  ".", "src",
-]
+pythonpath = [".", "src"]
 
 [[tool.mypy.overrides]]
-module = [
-    "pythonbasictools",
-    "pycodestyle",
-]
+module = ["pythonbasictools", "pycodestyle"]
 ignore_missing_imports = true
 
 [tool.black]

@@ -1,4 +1,4 @@
-from functions import add, sub, mul
+from functions import add, mul, sub
 
 
 class AClass:
