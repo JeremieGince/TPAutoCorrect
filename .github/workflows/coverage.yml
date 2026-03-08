@@ -6,6 +6,8 @@ on:
     types: [completed]
 
 permissions:
+  actions: read
+  contents: read
   pull-requests: write
   checks: write
 
@@ -26,9 +28,17 @@ jobs:
         with:
           name: coverage
           run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
 
       - name: Verify coverage file
-        run: test -f coverage.xml
+        run: test -f coverage.xml || test -f tests/.tmp/coverage.xml
+
+      - name: Normalize coverage filename
+        run: |
+          if [ -f tests/.tmp/coverage.xml ]; then
+            cp tests/.tmp/coverage.xml coverage.xml
+          fi
 
       - name: Post coverage
         uses: orgoro/coverage@v3.2
