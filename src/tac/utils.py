@@ -62,7 +62,7 @@ def shutil_onerror(func, path, exc_info):
         os.chmod(path, stat.S_IWUSR)
         func(path)
     else:
-        raise
+        raise exc_info[1].with_traceback(exc_info[2])
 
 
 def rm_file(filepath: Optional[str] = None):
@@ -95,9 +95,12 @@ def try_rmtree(path: str, ignore_errors: bool = True):
     :type ignore_errors: bool, optional
     """
     try:
-        shutil.rmtree(path, ignore_errors=ignore_errors, onerror=shutil_onerror)
+        shutil.rmtree(path, onerror=shutil_onerror)
     except FileNotFoundError:
         pass
+    except Exception:
+        if not ignore_errors:
+            raise
 
 
 def try_rm_trees(paths: Union[str, List[str]], ignore_errors: bool = True):
@@ -136,7 +139,9 @@ def rm_direnames_from_root(dirnames: Union[str, List[str]], root: Optional[str] 
     return True
 
 
-def rm_filetypes_from_root(filetypes: Union[str, List[str]], root: Optional[str] = None):
+def rm_filetypes_from_root(
+    filetypes: Union[str, List[str]], root: Optional[str] = None
+):
     """
     Remove files with specified extensions from the directory tree starting at root.
 
@@ -153,7 +158,7 @@ def rm_filetypes_from_root(filetypes: Union[str, List[str]], root: Optional[str]
     for root, dirs, files in os.walk(root):
         for file in files:
             if any([file.endswith(filetype) for filetype in filetypes]):
-                try_rmtree(os.path.join(root, file))
+                os.remove(os.path.join(root, file))
     return True
 
 
@@ -422,7 +427,11 @@ class PathImport:
         :rtype: Tuple[module, spec]
         """
         absolute_path = absolute_path or self.filepath
-        spec = importlib_util.spec_from_file_location(self.get_module_name(absolute_path), absolute_path)
+        spec = importlib_util.spec_from_file_location(
+            self.get_module_name(absolute_path), absolute_path
+        )
+        if spec is None or spec.loader is None:
+            raise ImportError(f"Cannot load module from {absolute_path}")
         module: str = importlib_util.module_from_spec(spec)  # type: ignore
         spec.loader.exec_module(module)  # type: ignore
         self._module, self._spec = module, spec  # type: ignore
@@ -509,7 +518,9 @@ def push_file_to_git_repo(
     return True
 
 
-def get_git_repo_url(working_dir: str, search_parent_directories: bool = True) -> Optional[str]:
+def get_git_repo_url(
+    working_dir: str, search_parent_directories: bool = True
+) -> Optional[str]:
     """
     Get the remote URL of the git repository for a given working directory.
 
@@ -523,7 +534,9 @@ def get_git_repo_url(working_dir: str, search_parent_directories: bool = True) -
     try:
         import git
 
-        repo = git.Repo(working_dir, search_parent_directories=search_parent_directories)
+        repo = git.Repo(
+            working_dir, search_parent_directories=search_parent_directories
+        )
         return repo.remotes.origin.url
     except Exception:
         return None
