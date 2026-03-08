@@ -180,7 +180,9 @@ class Source:
         :raises ValueError: If working_dir is not set.
         """
         if self.working_dir is None:
-            raise ValueError("working_dir must be set before accessing local_repo_tmp_dirpath")
+            raise ValueError(
+                "working_dir must be set before accessing local_repo_tmp_dirpath"
+            )
         return os.path.join(self.working_dir, self.local_repo_tmp_dirname)
 
     def _try_find_default_src_dir(self, root: Optional[str] = None) -> str:
@@ -214,6 +216,7 @@ class Source:
 
         :param overwrite: Whether to overwrite existing files. Defaults to False.
         :type overwrite: bool
+        :raises FileNotFoundError: If the source path does not exist after setup.
         """
         if self.is_setup and overwrite:
             utils.try_rmtree(self.local_path, ignore_errors=True)
@@ -223,6 +226,12 @@ class Source:
 
         if self._src_path is None:
             self._src_path = self._try_find_default_src_dir()
+
+        if not os.path.exists(self.src_path):
+            raise FileNotFoundError(
+                f"Source path '{self.src_path}' does not exist. "
+                f"If using a remote repository, ensure the path exists in the repo."
+            )
 
         shutil.copytree(self.src_path, self.local_path, dirs_exist_ok=True)
 
@@ -238,12 +247,14 @@ class Source:
 
         if os.path.exists(self.local_repo_tmp_dirpath):
             self.logging_func(
-                f"Repo {self.repo_name} already exists at {self.local_repo_tmp_dirpath}. " f"Reusing existing clone."
+                f"Repo {self.repo_name} already exists at {self.local_repo_tmp_dirpath}. "
+                f"Reusing existing clone."
             )
             self.repo = git.Repo(self.local_repo_tmp_dirpath)
         else:
             self.logging_func(
-                f"Cloning repo {self.repo_name} from {self.repo_url} " f"to {self.local_repo_tmp_dirpath}..."
+                f"Cloning repo {self.repo_name} from {self.repo_url} "
+                f"to {self.local_repo_tmp_dirpath}..."
             )
             self.repo = git.Repo.clone_from(
                 self.repo_url,
@@ -254,7 +265,9 @@ class Source:
 
         # Update src_path to point to the cloned repo
         if self._src_path is None:
-            self._src_path = self._try_find_default_src_dir(root=self.local_repo_tmp_dirpath)
+            self._src_path = self._try_find_default_src_dir(
+                root=self.local_repo_tmp_dirpath
+            )
         else:
             # Re-root src_path under the cloned repo, preserving any
             # subdirectory structure the caller specified.  Strip any leading
@@ -284,7 +297,9 @@ class Source:
         self.copy_to_working_dir(overwrite=overwrite)
         return self.local_path
 
-    def send_cmd_to_process(self, cmd: str, timeout: Optional[int] = None, **kwargs) -> str:
+    def send_cmd_to_process(
+        self, cmd: str, timeout: Optional[int] = None, **kwargs
+    ) -> str:
         """
         Send a command to a subprocess.
 
@@ -312,8 +327,13 @@ class Source:
         )
 
         if result.returncode != 0:
-            self.logging_func(f"Command failed (exit {result.returncode}): {cmd}\n" f"stderr: {result.stderr.strip()}")
-            raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
+            self.logging_func(
+                f"Command failed (exit {result.returncode}): {cmd}\n"
+                f"stderr: {result.stderr.strip()}"
+            )
+            raise subprocess.CalledProcessError(
+                result.returncode, cmd, result.stdout, result.stderr
+            )
 
         return result.stdout
 
@@ -340,9 +360,13 @@ class Source:
         :return: String representation.
         :rtype: str
         """
+        try:
+            src_path = self.src_path
+        except (ValueError, Exception):
+            src_path = self._src_path
         return (
             f"{self.__class__.__name__}("
-            f"src_path={self.src_path}, "
+            f"src_path={src_path}, "
             f"repo_url={self.repo_url}, "
             f"local_path={self.local_path}"
             f"{self.extra_repr()}"
@@ -387,7 +411,9 @@ class SourceCode(Source):
         super().__init__(src_path, *args, **kwargs)
         self.venv = kwargs.get("venv", self.DEFAULT_VENV)
         self.reqs_path = kwargs.get("reqs_path", None)
-        self.additional_requirements: List[str] = kwargs.get("additional_requirements", [])
+        self.additional_requirements: List[str] = kwargs.get(
+            "additional_requirements", []
+        )
         self.use_uv = kwargs.get("use_uv", True)
 
     @property
@@ -492,7 +518,9 @@ class SourceCode(Source):
                 shutil.copy2(reqs_path, dest)
                 self.logging_func(f"Copied requirements.txt to {dest}")
 
-    def setup_at(self, dst_path: Optional[str] = None, overwrite: bool = True, **kwargs) -> str:
+    def setup_at(
+        self, dst_path: Optional[str] = None, overwrite: bool = True, **kwargs
+    ) -> str:
         """
         Set up the source code at the specified destination, including venv and requirements.
 
@@ -512,7 +540,9 @@ class SourceCode(Source):
         # Skip venv creation and requirements installation if the venv already
         # exists and the caller did not request an overwrite.
         if self.is_venv_created and not overwrite:
-            self.logging_func(f"Venv already exists at {self.venv_path}, skipping creation.")
+            self.logging_func(
+                f"Venv already exists at {self.venv_path}, skipping creation."
+            )
         else:
             venv_stdout = self.recreate_venv()
             reqs_stdout = self.install_requirements()
@@ -541,7 +571,9 @@ class SourceCode(Source):
 
         if not os.path.exists(self.venv_path):
             self.logging_func(f"Creating venv at {self.venv_path}...")
-            stdout = self.send_cmd_to_process(f"python -m venv {self.venv}", cwd=self.working_dir)
+            stdout = self.send_cmd_to_process(
+                f"{sys.executable} -m venv {self.venv}", cwd=self.working_dir
+            )
             self.logging_func(f"Venv creation complete")
 
         return stdout
@@ -627,9 +659,13 @@ class SourceCode(Source):
         if self.use_uv and utils.check_uv_available():
             # With uv: prefer pyproject.toml
             if pyproject_path:
-                self.logging_func(f"Installing from pyproject.toml with uv: {pyproject_path}")
+                self.logging_func(
+                    f"Installing from pyproject.toml with uv: {pyproject_path}"
+                )
                 try:
-                    result = utils.install_from_pyproject(pyproject_path, venv_path=self.venv_path, use_uv=True)
+                    result = utils.install_from_pyproject(
+                        pyproject_path, venv_path=self.venv_path, use_uv=True
+                    )
                     std_out = result.stdout
                     installed = True
                     self.logging_func("Dependencies installed from pyproject.toml")
@@ -638,9 +674,13 @@ class SourceCode(Source):
 
             # Fallback to requirements.txt with uv
             if not installed and reqs_path:
-                self.logging_func(f"Installing from requirements.txt with uv: {reqs_path}")
+                self.logging_func(
+                    f"Installing from requirements.txt with uv: {reqs_path}"
+                )
                 try:
-                    result = utils.install_requirements(reqs_path, venv_path=self.venv_path, use_uv=True)
+                    result = utils.install_requirements(
+                        reqs_path, venv_path=self.venv_path, use_uv=True
+                    )
                     std_out = result.stdout
                     installed = True
                     self.logging_func("Dependencies installed from requirements.txt")
@@ -650,7 +690,9 @@ class SourceCode(Source):
         # With pip or as final fallback: prefer requirements.txt
         if not installed:
             if reqs_path:
-                self.logging_func(f"Installing from requirements.txt with pip: {reqs_path}")
+                self.logging_func(
+                    f"Installing from requirements.txt with pip: {reqs_path}"
+                )
                 try:
                     result = utils.install_requirements(
                         reqs_path,
@@ -663,7 +705,9 @@ class SourceCode(Source):
                 except Exception as e:
                     self.logging_func(f"Error installing from requirements.txt: {e}")
             elif pyproject_path:
-                self.logging_func(f"Installing from pyproject.toml with pip: {pyproject_path}")
+                self.logging_func(
+                    f"Installing from pyproject.toml with pip: {pyproject_path}"
+                )
                 try:
                     result = utils.install_from_pyproject(
                         pyproject_path,
@@ -677,21 +721,27 @@ class SourceCode(Source):
                     self.logging_func(f"Error installing from pyproject.toml: {e}")
 
         if not installed:
-            self.logging_func("No dependency files found (pyproject.toml or requirements.txt)")
+            self.logging_func(
+                "No dependency files found (pyproject.toml or requirements.txt)"
+            )
             std_out = "No dependency files found."
 
         # Install additional requirements
         for req in self.additional_requirements:
             self.logging_func(f"Installing additional requirement: {req}")
             try:
-                result = utils.install_package(req, venv_path=self.venv_path, use_uv=self.use_uv)
+                result = utils.install_package(
+                    req, venv_path=self.venv_path, use_uv=self.use_uv
+                )
                 self.logging_func(f"Installed {req}")
             except Exception as e:
                 self.logging_func(f"Error installing {req}: {e}")
 
         return std_out
 
-    def send_cmd_to_process(self, cmd: str, timeout: Optional[int] = None, **kwargs) -> str:
+    def send_cmd_to_process(
+        self, cmd: str, timeout: Optional[int] = None, **kwargs
+    ) -> str:
         """
         Send a command to a subprocess, using the venv's Python/pip if available.
 
@@ -755,7 +805,9 @@ class SourceTests(Source):
         """
         super().__init__(src_path, *args, **kwargs)
 
-    def setup_at(self, dst_path: Optional[str] = None, overwrite: bool = True, **kwargs) -> str:
+    def setup_at(
+        self, dst_path: Optional[str] = None, overwrite: bool = True, **kwargs
+    ) -> str:
         """
         Set up the test source at the specified destination.
 

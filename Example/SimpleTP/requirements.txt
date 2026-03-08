@@ -1,1 +1,4 @@
-PythonBasicTools==0.0.1a10
+PythonBasicTools>=0.0.1a10
+pytest>=8.3.5
+pytest-cov>=7.0.0
+pytest-json-report>=1.5.0

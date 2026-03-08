@@ -319,10 +319,79 @@ class Tester:
             self.master_code_src.setup_at(self.report_dir, **kwargs)
 
         if self.base_tests_src is not None:
-            self.base_tests_src.setup_at(self.report_dir, **kwargs)
+            _base_available = False
+            try:
+                _base_available = (
+                    self.base_tests_src.is_local or self.base_tests_src.is_remote
+                )
+            except (ValueError, Exception):
+                pass
+
+            if _base_available:
+                try:
+                    self.base_tests_src.setup_at(self.report_dir, **kwargs)
+                except FileNotFoundError as e:
+                    _base_path = None
+                    try:
+                        _base_path = self.base_tests_src.src_path
+                    except (ValueError, Exception):
+                        pass
+                    self.base_tests_src.working_dir = self.report_dir
+                    warnings.warn(
+                        f"base_tests source path not found: {e}. "
+                        f"Skipping base_tests setup. Score for "
+                        f"{self.BASE_TESTS_KEY!r} will be set to 0.",
+                        RuntimeWarning,
+                    )
+            else:
+                _base_path = None
+                try:
+                    _base_path = self.base_tests_src.src_path
+                except (ValueError, Exception):
+                    pass
+                if self.base_tests_src is not None:
+                    self.base_tests_src.working_dir = self.report_dir
+                warnings.warn(
+                    f"base_tests source not found at {_base_path!r}. "
+                    f"Skipping base_tests setup. Score for "
+                    f"{self.BASE_TESTS_KEY!r} will be set to 0.",
+                    RuntimeWarning,
+                )
 
         if self.hidden_tests_src is not None:
-            self.hidden_tests_src.setup_at(self.report_dir, **kwargs)
+            _hidden_available = False
+            try:
+                _hidden_available = (
+                    self.hidden_tests_src.is_local or self.hidden_tests_src.is_remote
+                )
+            except (ValueError, Exception):
+                pass
+
+            if _hidden_available:
+                try:
+                    self.hidden_tests_src.setup_at(self.report_dir, **kwargs)
+                except FileNotFoundError as e:
+                    self.hidden_tests_src.working_dir = self.report_dir
+                    warnings.warn(
+                        f"hidden_tests source path not found: {e}. "
+                        f"Skipping hidden_tests setup. Score for "
+                        f"{self.HIDDEN_TESTS_KEY!r} will be set to 0.",
+                        RuntimeWarning,
+                    )
+            else:
+                _hidden_path = None
+                try:
+                    _hidden_path = self.hidden_tests_src.src_path
+                except (ValueError, Exception):
+                    pass
+                if self.hidden_tests_src is not None:
+                    self.hidden_tests_src.working_dir = self.report_dir
+                warnings.warn(
+                    f"hidden_tests source not found at {_hidden_path!r}. "
+                    f"Skipping hidden_tests setup. Score for "
+                    f"{self.HIDDEN_TESTS_KEY!r} will be set to 0.",
+                    RuntimeWarning,
+                )
 
         if debug:
             self.logging_func(f"✓ Student code: {self.code_src.local_path}")
