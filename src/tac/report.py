@@ -86,8 +86,11 @@ class Report:
         :return: True if weights sum to 1.0 (within numerical tolerance), False otherwise.
         :rtype: bool
         """
-        total_weight = sum(self.get_weight(k) for k in self.keys())
-        return np.isclose(total_weight, 1.0)
+        total_weight: float = sum(
+            (self.get_weight(k) or 0.0)
+            for k in self.keys()  # type: ignore[misc]
+        )
+        return bool(np.isclose(total_weight, 1.0))
 
     def get_state(self) -> Dict[str, Any]:
         """
@@ -271,13 +274,17 @@ class Report:
         :return: The current instance with normalized weights.
         :rtype: Report
         """
-        total_weight = sum(self.get_weight(k) for k in self.keys())
+        total_weight: float = sum(
+            (self.get_weight(k) or 0.0)
+            for k in self.keys()  # type: ignore[misc]
+        )
 
         if total_weight == 0:
             raise ValueError("Cannot normalize when total weight is zero")
 
         for k in self.keys():
-            self.data[k][self.WEIGHT_KEY] = self.get_weight(k) / total_weight
+            w = self.get_weight(k)
+            self.data[k][self.WEIGHT_KEY] = (w if w is not None else 0.0) / total_weight
 
         return self
 
@@ -289,15 +296,18 @@ class Report:
         :rtype: Report
         :raises ValueError: If total weight is zero.
         """
-        total_weight = sum(self.get_weight(k) for k in self.keys())
+        total_weight: float = sum(
+            (self.get_weight(k) or 0.0)
+            for k in self.keys()  # type: ignore[misc]
+        )
 
         if total_weight == 0:
             raise ValueError("Cannot normalize when total weight is zero")
 
-        normalized_data = {
+        normalized_data: Dict[str, Dict[str, float]] = {
             k: {
-                self.VALUE_KEY: self.get_value(k),
-                self.WEIGHT_KEY: self.get_weight(k) / total_weight,
+                self.VALUE_KEY: self.get_value(k) or 0.0,
+                self.WEIGHT_KEY: (self.get_weight(k) or 0.0) / total_weight,
             }
             for k in self.keys()
         }

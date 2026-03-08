@@ -153,16 +153,21 @@ class Tester:
         self.hidden_test_cases_summary: Optional[dict] = None
 
         # Setup report directory and filepath
-        self.report_dir = self.kwargs.get("report_dir")
-        if self.report_dir is None:
-            self.report_dir = os.path.join(os.getcwd(), "report_dir")
+        _report_dir: Optional[str] = (
+            str(self.kwargs["report_dir"]) if "report_dir" in self.kwargs else None
+        )
+        self.report_dir: str = _report_dir or os.path.join(os.getcwd(), "report_dir")
         # Always store as an absolute path so that venv executables built from
         # report_dir remain valid when subprocess changes its cwd to report_dir.
         self.report_dir = str(Path(self.report_dir).resolve())
 
-        self.report_filepath = self.kwargs.get(
-            "report_filepath",
-            os.path.join(self.report_dir, self.DEFAULT_REPORT_FILENAME),
+        _report_filepath: Optional[str] = (
+            str(self.kwargs["report_filepath"])
+            if "report_filepath" in self.kwargs
+            else None
+        )
+        self.report_filepath: str = _report_filepath or os.path.join(
+            self.report_dir, self.DEFAULT_REPORT_FILENAME
         )
 
         # Initialize report
@@ -246,7 +251,8 @@ class Tester:
         options = []
 
         if add_cov:
-            src_dirname = os.path.basename(self.code_src.local_path)
+            _lp: str = self.code_src.local_path or ""
+            src_dirname = os.path.basename(_lp)
             options += [
                 f"--cov={src_dirname}",
                 "--cov-report=json",
@@ -480,10 +486,10 @@ class Tester:
 
         # --- base_tests (with coverage append) ---
         if base_dir and os.path.isdir(base_dir):
+            assert self.base_tests_src is not None  # guaranteed by base_dir being set
+            _base_local: str = self.base_tests_src.local_path or base_dir
             self._run_master_suite_pytest(
-                suite_dirname=os.path.relpath(
-                    self.base_tests_src.local_path, self.report_dir
-                ),
+                suite_dirname=os.path.relpath(_base_local, self.report_dir),
                 report_filename=self.BASE_PYTEST_REPORT,
                 output_filename=self.BASE_PYTEST_OUTPUT,
                 test_type="Base Tests",
@@ -542,10 +548,12 @@ class Tester:
         # --- hidden_tests (no coverage) ---
         hidden_dir = self.hidden_tests_src.local_path if self.hidden_tests_src else None
         if hidden_dir and os.path.isdir(hidden_dir):
+            assert (
+                self.hidden_tests_src is not None
+            )  # guaranteed by hidden_dir being set
+            _hidden_local: str = self.hidden_tests_src.local_path or hidden_dir
             self._run_master_suite_pytest(
-                suite_dirname=os.path.relpath(
-                    self.hidden_tests_src.local_path, self.report_dir
-                ),
+                suite_dirname=os.path.relpath(_hidden_local, self.report_dir),
                 report_filename=self.HIDDEN_PYTEST_REPORT,
                 output_filename=self.HIDDEN_PYTEST_OUTPUT,
                 test_type="Hidden Tests",
@@ -770,7 +778,7 @@ class Tester:
         :rtype: float
         """
         try:
-            coverage_file = utils.reindent_json_file(self.coverage_json_path)
+            coverage_file = utils.reindent_json_file(str(self.coverage_json_path))
 
             if coverage_file is None:
                 warnings.warn(f"Coverage file not found at {self.coverage_json_path}")
@@ -894,7 +902,8 @@ class Tester:
         :return: Average PEP8 compliance percentage (0-100).
         :rtype: float
         """
-        src_test_case = PEP8TestCase(self.PEP8_KEY, self.code_src.local_path)
+        _src_lp: str = self.code_src.local_path or ""
+        src_test_case = PEP8TestCase(self.PEP8_KEY, _src_lp)
         src_result = src_test_case.run()
 
         supp_local = (
@@ -903,7 +912,8 @@ class Tester:
         # Fall back to code_src if supp_tests is not available
         if not supp_local or not os.path.isdir(supp_local):
             supp_local = self.code_src.local_path
-        tests_test_case = PEP8TestCase(self.PEP8_KEY, supp_local)
+        _supp_lp: str = supp_local or ""
+        tests_test_case = PEP8TestCase(self.PEP8_KEY, _supp_lp)
         tests_result = tests_test_case.run()
 
         with open(self.pep8_errors_path, "w", encoding="utf-8") as f:
@@ -954,7 +964,7 @@ class Tester:
             self.logging_func(
                 f"Auto-detecting git repo URL from {self.code_src.working_dir}"
             )
-            push_report_to = utils.get_git_repo_url(self.code_src.working_dir)
+            push_report_to = utils.get_git_repo_url(self.code_src.working_dir or "")
 
         if push_report_to is None:
             warnings.warn(

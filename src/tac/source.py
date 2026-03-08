@@ -219,7 +219,8 @@ class Source:
         :raises FileNotFoundError: If the source path does not exist after setup.
         """
         if self.is_setup and overwrite:
-            utils.try_rmtree(self.local_path, ignore_errors=True)
+            if self.local_path is not None:
+                utils.try_rmtree(self.local_path, ignore_errors=True)
 
         if self.is_remote:
             self._clone_repo()
@@ -233,7 +234,10 @@ class Source:
                 f"If using a remote repository, ensure the path exists in the repo."
             )
 
-        shutil.copytree(self.src_path, self.local_path, dirs_exist_ok=True)
+        local_path = self.local_path
+        if local_path is None:
+            raise ValueError("local_path is None; working_dir has not been set.")
+        shutil.copytree(self.src_path, local_path, dirs_exist_ok=True)
 
     def _clone_repo(self):
         """
@@ -257,7 +261,7 @@ class Source:
                 f"to {self.local_repo_tmp_dirpath}..."
             )
             self.repo = git.Repo.clone_from(
-                self.repo_url,
+                self.repo_url,  # type: ignore[arg-type]  # is_remote guarantees non-None
                 self.local_repo_tmp_dirpath,
                 branch=self.repo_branch,
             )
@@ -295,7 +299,7 @@ class Source:
         """
         self.working_dir = dst_path or os.getcwd()
         self.copy_to_working_dir(overwrite=overwrite)
-        return self.local_path
+        return self.local_path or self.working_dir
 
     def send_cmd_to_process(
         self, cmd: str, timeout: Optional[int] = None, **kwargs
@@ -361,7 +365,7 @@ class Source:
         :rtype: str
         """
         try:
-            src_path = self.src_path
+            src_path: Optional[str] = self.src_path
         except (ValueError, Exception):
             src_path = self._src_path
         return (
@@ -831,13 +835,14 @@ class SourceTests(Source):
         :type pattern: str
         :raises AssertionError: If the local path does not exist or pattern is invalid.
         """
-        if not os.path.exists(self.local_path):
-            raise ValueError(f"Path {self.local_path} does not exist.")
+        local_path = self.local_path
+        if not os.path.exists(local_path or ""):
+            raise ValueError(f"Path {local_path} does not exist.")
 
         if "{}" not in pattern:
             raise ValueError(f"Pattern {pattern} must contain {{}}.")
 
-        for root, dirs, files in os.walk(self.local_path):
+        for root, dirs, files in os.walk(local_path or ""):
             for file in files:
                 if file.startswith("test_") and file.endswith(".py"):
                     new_file = pattern.format(file).replace(".py", "") + ".py"
